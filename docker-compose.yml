@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+    postgres:
+        image: postgres:16
+        container_name: mini-ecommerce-db
+        ports:
+            - "5433:5432" #HOST:CONTAINER
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: mini_ecommerce
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:
