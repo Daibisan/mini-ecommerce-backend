@@ -3,6 +3,8 @@ import cors from "cors";
 import auth_router from "./modules/auth/auth.route.js";
 import { errorHandler } from "./middleware/errorHandler.middleware.js";
 import { env } from "./config/env.js";
+import requireAuth from "./middleware/requireAuth.middleware.js";
+import authorize from "./middleware/authorize.middleware.js";
 
 const app = express();
 
@@ -23,6 +25,11 @@ app.get("/health", (req, res) => {
     res.status(200).json({
         status: "ok",
     });
+});
+
+app.use(requireAuth, authorize("USER"));
+app.get("/test/requireAuth", (req, res) => {
+    res.status(200).json({ message: "ok" });
 });
 
 // routes
