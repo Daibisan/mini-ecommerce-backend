@@ -13,8 +13,10 @@
         "docker:build-up": "docker-compose up -d --build",
         "db:migrate": "prisma migrate dev",
         "db:reset": "prisma migrate reset",
+        "db:delete": "prisma db push --force-reset",
         "db:studio": "prisma studio",
-        "db:seed": "prisma db seed"
+        "db:seed": "prisma db seed",
+        "db:generate": "prisma generate"
     },
     "keywords": [],
     "author": "",

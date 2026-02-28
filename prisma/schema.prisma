@@ -32,6 +32,7 @@ model Category {
   category_id String   @id @default(uuid())
   name        String   @unique
   created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
 
   // mendefinisikan relasi
   products Product[]

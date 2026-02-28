@@ -73,5 +73,5 @@ export const categoryService = {
     updateCategory,
     deleteCategory,
     getAllCategories,
-    getCategory
+    getCategory,
 };
