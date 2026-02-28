@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import AppError from "../../utils/appError.util.js";
+import validator from "validator";
 import { createUser, loginUser } from "./auth.service.js";
 
 interface RegisterBody {
@@ -16,9 +17,19 @@ interface LoginBody {
 export const register: RequestHandler = async (req, res) => {
     const { username, email, password }: RegisterBody = req.body;
 
-    // check empty input
+    // empty payload?
     if (!username || !email || !password) {
         throw new AppError("All fields must be filled", 400);
+    }
+
+    // strong password?
+    if (!validator.isStrongPassword(password)) {
+        throw new AppError("Password not strong enough", 400);
+    }
+
+    // isEmail?
+    if (!validator.isEmail(email.toLowerCase())) {
+        throw new AppError("Email is not valid", 400);
     }
 
     const newUser = await createUser(username, email, password);
@@ -31,7 +42,7 @@ export const register: RequestHandler = async (req, res) => {
 export const login: RequestHandler = async (req, res) => {
     const { identifier, password }: LoginBody = req.body;
 
-    // check empty input
+    // empty payload?
     if (!identifier || !password) {
         throw new AppError("All fields must be filled", 400);
     }

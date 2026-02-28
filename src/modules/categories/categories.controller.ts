@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import AppError from "../../utils/appError.util.js";
+import validator from "validator";
 import { categoryService } from "./categories.service.js";
 
 interface CreateCategoryBody {
@@ -12,6 +13,11 @@ export const createCategory: RequestHandler = async (req, res) => {
     // check empty input
     if (!name) {
         throw new AppError("Category's name must be filled", 400);
+    }
+    
+    // name contains number?
+    if (!validator.isAlpha(name)) {
+        throw new AppError("Category name can not contain number", 400);
     }
 
     const newCategory = await categoryService.createCategory(name);

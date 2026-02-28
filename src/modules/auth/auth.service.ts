@@ -1,8 +1,8 @@
 import { prisma } from "../../lib/prisma.js";
 import { env } from "../../config/env.js";
 import bcrypt from "bcrypt";
-import validator from "validator";
 import jwt from "jsonwebtoken";
+import validator from "validator";
 import AppError from "../../utils/appError.util.js";
 import { Role } from "../../generated/prisma/enums.js";
 
@@ -15,26 +15,18 @@ export const createUser = async (
     email: string,
     password: string,
 ) => {
-    // strong password?
-    if (!validator.isStrongPassword(password)) {
-        throw new AppError("Password not strong enough", 400);
-    }
-
-    // isEmail?
-    if (!validator.isEmail(email.toLowerCase())) {
-        throw new AppError("Email is not valid", 400);
-    }
-
-    // duplicate email/username?
+    // duplicate email?
     const emailExists = await prisma.user.findUnique({
         where: { email },
-    });
-    const usernameExists = await prisma.user.findUnique({
-        where: { username },
     });
     if (emailExists) {
         throw new AppError("Email already in use", 409);
     }
+    
+    // duplicate username?
+    const usernameExists = await prisma.user.findUnique({
+        where: { username },
+    });
     if (usernameExists) {
         throw new AppError("Username already in use", 409);
     }
@@ -74,6 +66,7 @@ export const loginUser = async (identifier: string, password: string) => {
     }
 
     const token = createToken(user.user_id, user.role);
+
     return {
         token,
         user: {
