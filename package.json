@@ -7,7 +7,10 @@
         "dev": "tsx watch src/server.ts",
         "start": "node dist/server.js",
         "build": "tsc",
-        "test": "tsx src/test/test.ts"
+        "test": "tsx src/test/test.ts",
+        "migrate": "npx prisma migrate dev",
+        "studio": "npx prisma studio",
+        "start-docker": "docker compose up -d"
     },
     "keywords": [],
     "author": "",

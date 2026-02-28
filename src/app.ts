@@ -1,10 +1,9 @@
 import express from "express";
 import cors from "cors";
-import auth_router from "./modules/auth/auth.route.js";
 import { errorHandler } from "./middleware/errorHandler.middleware.js";
 import { env } from "./config/env.js";
-import requireAuth from "./middleware/requireAuth.middleware.js";
-import authorize from "./middleware/authorize.middleware.js";
+import { auth_router } from "./modules/auth/auth.route.js";
+import { categories_router } from "./modules/categories/categories.route.js";
 
 const app = express();
 
@@ -27,13 +26,9 @@ app.get("/health", (req, res) => {
     });
 });
 
-app.use(requireAuth, authorize("USER"));
-app.get("/test/requireAuth", (req, res) => {
-    res.status(200).json({ message: "ok" });
-});
-
 // routes
 app.use("/api/auth", auth_router);
+app.use("/api/categories", categories_router);
 
 // error handler
 app.use(errorHandler);

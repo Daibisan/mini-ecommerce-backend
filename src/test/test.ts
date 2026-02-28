@@ -14,3 +14,9 @@ async function main() {
 }
 
 main();
+
+
+// app.use(requireAuth, authorize("USER"));
+// app.get("/test/requireAuth", (req, res) => {
+//     res.status(200).json({ message: "ok" });
+// });

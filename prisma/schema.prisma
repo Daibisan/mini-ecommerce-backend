@@ -1,53 +1,53 @@
 generator client {
-    provider = "prisma-client"
-    output   = "../src/generated/prisma"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-    provider = "postgresql"
+  provider = "postgresql"
 }
 
 enum Role {
-    USER
-    ADMIN
+  USER
+  ADMIN
 }
 
 enum ProductStatus {
-    DRAFT
-    ACTIVE
-    ARCHIVED
+  DRAFT
+  ACTIVE
+  ARCHIVED
 }
 
 model User {
-    user_id         String      @id @default(uuid())
-    username        String      @unique
-    email           String      @unique
-    password_hash   String      
-    role            Role        @default(USER)
-    created_at      DateTime    @default(now())
-    updated_at      DateTime    @updatedAt
+  user_id       String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  password_hash String
+  role          Role     @default(USER)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 }
 
 model Category {
-    category_id         String      @id @default(uuid())
-    name                String      @unique
-    created_at          DateTime    @default(now())
-    
-    // mendefinisikan relasi
-    products            Product[]
+  category_id String   @id @default(uuid())
+  name        String   @unique
+  created_at  DateTime @default(now())
+
+  // mendefinisikan relasi
+  products Product[]
 }
 
 model Product {
-    product_id          String          @id @default(uuid())
-    name                String          @unique
-    description         String?      
-    price               Float
-    stock               Int
-    status              ProductStatus   @default(DRAFT)
-    created_at          DateTime        @default(now())
-    updated_at          DateTime        @updatedAt
-    category_id         String
-    
-    // mendefinisikan relasi
-    category            Category        @relation(fields: [category_id], references: [category_id])
+  product_id  String        @id @default(uuid())
+  name        String        @unique
+  description String?
+  price       Decimal
+  stock       Int
+  status      ProductStatus @default(DRAFT)
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  category_id String
+
+  // mendefinisikan relasi
+  category Category @relation(fields: [category_id], references: [category_id])
 }
