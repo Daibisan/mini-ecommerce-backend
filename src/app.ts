@@ -4,9 +4,11 @@ import { errorHandler } from "./middleware/errorHandler.middleware.js";
 import { env } from "./config/env.js";
 import { auth_router } from "./modules/auth/auth.route.js";
 import { categories_router } from "./modules/categories/categories.route.js";
+import helmet from "helmet";
 
 const app = express();
 
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
