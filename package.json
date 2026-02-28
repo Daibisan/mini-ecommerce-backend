@@ -8,9 +8,13 @@
         "start": "node dist/server.js",
         "build": "tsc",
         "test": "tsx src/test/test.ts",
-        "migrate": "npx prisma migrate dev",
-        "studio": "npx prisma studio",
-        "start-docker": "docker compose up -d"
+        "docker:up": "docker-compose up -d",
+        "docker:down": "docker-compose down",
+        "docker:build-up": "docker-compose up -d --build",
+        "db:migrate": "prisma migrate dev",
+        "db:reset": "prisma migrate reset",
+        "db:studio": "prisma studio",
+        "db:seed": "prisma db seed"
     },
     "keywords": [],
     "author": "",

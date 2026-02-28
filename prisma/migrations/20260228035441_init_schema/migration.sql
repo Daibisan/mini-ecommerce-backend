@@ -31,7 +31,7 @@ CREATE TABLE "Product" (
     "product_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "price" DOUBLE PRECISION NOT NULL,
+    "price" DECIMAL(65,30) NOT NULL,
     "stock" INTEGER NOT NULL,
     "status" "ProductStatus" NOT NULL DEFAULT 'DRAFT',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
