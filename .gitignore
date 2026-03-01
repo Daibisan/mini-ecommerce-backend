@@ -9,3 +9,4 @@ yarn-debug.log*
 .DS_Store
 .vscode
 /src/generated/prisma
+/src/test
