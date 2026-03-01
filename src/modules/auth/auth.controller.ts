@@ -3,17 +3,7 @@ import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { createUser, loginUser } from "./auth.service.js";
 import { ApiResponse } from "../../types/api.interface.js";
-
-interface RegisterBody {
-    username: string;
-    email: string;
-    password: string;
-}
-
-interface LoginBody {
-    identifier: string;
-    password: string;
-}
+import { LoginBody, RegisterBody } from "../../types/auth.interface.js";
 
 export const register: RequestHandler<{}, ApiResponse> = async (req, res) => {
     const { username, email, password }: RegisterBody = req.body;

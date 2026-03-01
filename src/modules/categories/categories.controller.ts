@@ -3,14 +3,7 @@ import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { categoryService } from "./categories.service.js";
 import { ApiResponse } from "../../types/api.interface.js";
-
-interface CategoryRequest {
-    name: string;
-}
-
-interface CategoryParams {
-    id: string;
-}
+import { CategoryParams, CategoryRequest } from "../../types/categories.intereface.js";
 
 // PUBLIC
 export const getAllCategories: RequestHandler<{}, ApiResponse> = async (req, res) => {
