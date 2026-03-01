@@ -2,11 +2,8 @@ import { RequestHandler } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { categoryService } from "./categories.service.js";
-import { ApiResponse } from "../../types/api.interface.js";
-import {
-    CategoryParams,
-    CategoryRequest,
-} from "../../types/categories.intereface.js";
+import { ApiResponse, IdParams } from "../../types/api.interface.js";
+import { CategoryRequest } from "../../types/categories.intereface.js";
 
 // PUBLIC
 export const getAllCategories: RequestHandler<{}, ApiResponse> = async (
@@ -21,7 +18,7 @@ export const getAllCategories: RequestHandler<{}, ApiResponse> = async (
     });
 };
 
-export const getCategory: RequestHandler<CategoryParams, ApiResponse> = async (
+export const getCategory: RequestHandler<IdParams, ApiResponse> = async (
     req,
     res,
 ) => {
@@ -69,7 +66,7 @@ export const createCategory: RequestHandler<
 };
 
 export const updateCategory: RequestHandler<
-    CategoryParams,
+    IdParams,
     ApiResponse,
     CategoryRequest
 > = async (req, res) => {
@@ -99,10 +96,10 @@ export const updateCategory: RequestHandler<
     });
 };
 
-export const deleteCategory: RequestHandler<
-    CategoryParams,
-    ApiResponse
-> = async (req, res) => {
+export const deleteCategory: RequestHandler<IdParams, ApiResponse> = async (
+    req,
+    res,
+) => {
     let { id } = req.params;
 
     // input sanitation

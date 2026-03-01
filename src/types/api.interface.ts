@@ -4,3 +4,7 @@ export interface ApiResponse<T = any> {
     data?: T;
     error?: any;
 }
+
+export interface IdParams {
+    id: string;
+}
