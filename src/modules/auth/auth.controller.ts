@@ -9,12 +9,17 @@ export const register: RequestHandler<{}, ApiResponse, RegisterBody> = async (
     req,
     res,
 ) => {
-    const { username, email, password } = req.body;
+    let { username, email, password } = req.body;
 
     // empty payload?
     if (!username || !email || !password) {
         throw new AppError("All fields must be filled", 400);
     }
+
+    // input sanitation
+    username = validator.escape(username);
+    email = validator.escape(email);
+    password = validator.escape(password);
 
     // strong password?
     if (!validator.isStrongPassword(password)) {
@@ -38,12 +43,16 @@ export const login: RequestHandler<{}, ApiResponse, LoginBody> = async (
     req,
     res,
 ) => {
-    const { identifier, password } = req.body;
+    let { identifier, password } = req.body;
 
     // empty payload?
     if (!identifier || !password) {
         throw new AppError("All fields must be filled", 400);
     }
+
+    // input sanitation
+    identifier = validator.escape(identifier);
+    password = validator.escape(password);
 
     const authenticatedUser = await loginUser(identifier, password);
 

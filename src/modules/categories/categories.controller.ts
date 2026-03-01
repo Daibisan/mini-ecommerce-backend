@@ -25,7 +25,10 @@ export const getCategory: RequestHandler<CategoryParams, ApiResponse> = async (
     req,
     res,
 ) => {
-    const { id } = req.params;
+    let { id } = req.params;
+
+    // input sanitation
+    id = validator.escape(id);
 
     const category = await categoryService.getCategory(id);
 
@@ -48,7 +51,7 @@ export const createCategory: RequestHandler<
         throw new AppError("Category's name must be filled", 400);
     }
 
-    // sanitize data
+    // input sanitation
     name = validator.escape(name);
 
     // name contains number?
@@ -70,7 +73,7 @@ export const updateCategory: RequestHandler<
     ApiResponse,
     CategoryRequest
 > = async (req, res) => {
-    const { id } = req.params;
+    let { id } = req.params;
     let { name } = req.body;
 
     // empty payload?
@@ -78,7 +81,8 @@ export const updateCategory: RequestHandler<
         throw new AppError("Category's name must be filled", 400);
     }
 
-    // sanitize data
+    // input sanitation
+    id = validator.escape(id);
     name = validator.escape(name);
 
     // name contains number?
@@ -99,7 +103,10 @@ export const deleteCategory: RequestHandler<
     CategoryParams,
     ApiResponse
 > = async (req, res) => {
-    const { id } = req.params;
+    let { id } = req.params;
+
+    // input sanitation
+    id = validator.escape(id);
 
     const deletedCategory = await categoryService.deleteCategory(id);
 
