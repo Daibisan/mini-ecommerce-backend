@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { createUser, loginUser } from "./auth.service.js";
+import { ApiResponse } from "../../types/api.interface.js";
 
 interface RegisterBody {
     username: string;
@@ -14,7 +15,7 @@ interface LoginBody {
     password: string;
 }
 
-export const register: RequestHandler = async (req, res) => {
+export const register: RequestHandler<{}, ApiResponse> = async (req, res) => {
     const { username, email, password }: RegisterBody = req.body;
 
     // empty payload?
@@ -35,11 +36,12 @@ export const register: RequestHandler = async (req, res) => {
     const newUser = await createUser(username, email, password);
 
     res.status(201).json({
+        success: true,
         data: newUser,
     });
 };
 
-export const login: RequestHandler = async (req, res) => {
+export const login: RequestHandler<{}, ApiResponse> = async (req, res) => {
     const { identifier, password }: LoginBody = req.body;
 
     // empty payload?
@@ -50,6 +52,7 @@ export const login: RequestHandler = async (req, res) => {
     const authenticatedUser = await loginUser(identifier, password);
 
     res.status(200).json({
+        success: true,
         data: authenticatedUser,
     });
 };

@@ -1,8 +1,9 @@
 import { ErrorRequestHandler } from "express";
 import AppError from "../utils/appError.util.js";
 import { env } from "../config/env.js";
+import { ApiResponse } from "../types/api.interface.js";
 
-export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+export const errorHandler: ErrorRequestHandler<{}, ApiResponse> = (err, req, res, next) => {
     let statusCode = 500;
     let message = "Internal Server Error";
 
@@ -16,6 +17,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     }
 
     res.status(statusCode).json({
+        success: false,
         error: message,
     });
 }

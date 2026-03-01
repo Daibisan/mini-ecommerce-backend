@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { categoryService } from "./categories.service.js";
+import { ApiResponse } from "../../types/api.interface.js";
 
 interface CategoryRequest {
     name: string;
@@ -12,26 +13,28 @@ interface CategoryParams {
 }
 
 // PUBLIC
-export const getAllCategories: RequestHandler = async (req, res) => {
+export const getAllCategories: RequestHandler<{}, ApiResponse> = async (req, res) => {
     const categories = await categoryService.getAllCategories();
 
     res.status(200).json({
-        data: categories
+        success: true,
+        data: categories,
     });
 };
 
-export const getCategory: RequestHandler<CategoryParams> = async (req, res) => {
+export const getCategory: RequestHandler<CategoryParams, ApiResponse> = async (req, res) => {
     const { id } = req.params;
 
     const category = await categoryService.getCategory(id);
 
     res.status(200).json({
-        data: category
+        success: true,
+        data: category,
     });
 };
 
 // ADMIN
-export const createCategory: RequestHandler = async (req, res) => {
+export const createCategory: RequestHandler<{}, ApiResponse> = async (req, res) => {
     let { name }: CategoryRequest = req.body;
 
     // empty payload?
@@ -50,6 +53,7 @@ export const createCategory: RequestHandler = async (req, res) => {
     const newCategory = await categoryService.createCategory(name);
 
     res.status(201).json({
+        success: true,
         message: "Category created!",
         data: newCategory,
     });
@@ -57,7 +61,7 @@ export const createCategory: RequestHandler = async (req, res) => {
 
 export const updateCategory: RequestHandler<
     CategoryParams,
-    any,
+    ApiResponse,
     CategoryRequest
 > = async (req, res) => {
     const { id } = req.params;
@@ -79,20 +83,19 @@ export const updateCategory: RequestHandler<
     const updatedCategory = await categoryService.updateCategory(id, name);
 
     res.status(200).json({
+        success: true,
         message: "Category updated!",
         data: updatedCategory,
     });
 };
 
-export const deleteCategory: RequestHandler<CategoryParams> = async (
-    req,
-    res,
-) => {
+export const deleteCategory: RequestHandler<CategoryParams, ApiResponse> = async (req, res) => {
     const { id } = req.params;
 
     const deletedCategory = await categoryService.deleteCategory(id);
 
     res.status(200).json({
+        success: true,
         message: "Category deleted!",
         data: deletedCategory,
     });
