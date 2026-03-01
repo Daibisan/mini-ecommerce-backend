@@ -3,10 +3,16 @@ import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { categoryService } from "./categories.service.js";
 import { ApiResponse } from "../../types/api.interface.js";
-import { CategoryParams, CategoryRequest } from "../../types/categories.intereface.js";
+import {
+    CategoryParams,
+    CategoryRequest,
+} from "../../types/categories.intereface.js";
 
 // PUBLIC
-export const getAllCategories: RequestHandler<{}, ApiResponse> = async (req, res) => {
+export const getAllCategories: RequestHandler<{}, ApiResponse> = async (
+    req,
+    res,
+) => {
     const categories = await categoryService.getAllCategories();
 
     res.status(200).json({
@@ -15,7 +21,10 @@ export const getAllCategories: RequestHandler<{}, ApiResponse> = async (req, res
     });
 };
 
-export const getCategory: RequestHandler<CategoryParams, ApiResponse> = async (req, res) => {
+export const getCategory: RequestHandler<CategoryParams, ApiResponse> = async (
+    req,
+    res,
+) => {
     const { id } = req.params;
 
     const category = await categoryService.getCategory(id);
@@ -27,8 +36,12 @@ export const getCategory: RequestHandler<CategoryParams, ApiResponse> = async (r
 };
 
 // ADMIN
-export const createCategory: RequestHandler<{}, ApiResponse> = async (req, res) => {
-    let { name }: CategoryRequest = req.body;
+export const createCategory: RequestHandler<
+    {},
+    ApiResponse,
+    CategoryRequest
+> = async (req, res) => {
+    let { name } = req.body;
 
     // empty payload?
     if (!name) {
@@ -82,7 +95,10 @@ export const updateCategory: RequestHandler<
     });
 };
 
-export const deleteCategory: RequestHandler<CategoryParams, ApiResponse> = async (req, res) => {
+export const deleteCategory: RequestHandler<
+    CategoryParams,
+    ApiResponse
+> = async (req, res) => {
     const { id } = req.params;
 
     const deletedCategory = await categoryService.deleteCategory(id);

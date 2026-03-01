@@ -5,8 +5,11 @@ import { createUser, loginUser } from "./auth.service.js";
 import { ApiResponse } from "../../types/api.interface.js";
 import { LoginBody, RegisterBody } from "../../types/auth.interface.js";
 
-export const register: RequestHandler<{}, ApiResponse> = async (req, res) => {
-    const { username, email, password }: RegisterBody = req.body;
+export const register: RequestHandler<{}, ApiResponse, RegisterBody> = async (
+    req,
+    res,
+) => {
+    const { username, email, password } = req.body;
 
     // empty payload?
     if (!username || !email || !password) {
@@ -31,8 +34,11 @@ export const register: RequestHandler<{}, ApiResponse> = async (req, res) => {
     });
 };
 
-export const login: RequestHandler<{}, ApiResponse> = async (req, res) => {
-    const { identifier, password }: LoginBody = req.body;
+export const login: RequestHandler<{}, ApiResponse, LoginBody> = async (
+    req,
+    res,
+) => {
+    const { identifier, password } = req.body;
 
     // empty payload?
     if (!identifier || !password) {
