@@ -26,6 +26,8 @@ model User {
   role          Role     @default(USER)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
+
+  @@map("users")
 }
 
 model Category {
@@ -36,6 +38,8 @@ model Category {
 
   // mendefinisikan relasi
   products Product[]
+
+  @@map("categories")
 }
 
 model Product {
@@ -51,4 +55,6 @@ model Product {
 
   // mendefinisikan relasi
   category Category @relation(fields: [category_id], references: [category_id])
+
+  @@map("products")
 }
