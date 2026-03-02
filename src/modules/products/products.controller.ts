@@ -24,8 +24,8 @@ export const getProduct: RequestHandler<IdParams, ApiResponse> = async (
 ) => {
     let { id } = req.params;
 
-    // input sanitation
-    id = validator.escape(id);
+    // payload sanitation
+    id = validator.escape(id.trim());
 
     const product = await productService.getProduct(id);
 
@@ -59,10 +59,10 @@ export const createProduct: RequestHandler<
         throw new AppError("Product's category should be a string", 400);
     }
 
-    // input sanitation
-    name = validator.escape(name);
-    if (description) description = validator.escape(description);
-    category_id = validator.escape(category_id);
+    // payload sanitation
+    name = validator.escape(name.trim());
+    if (description) description = validator.escape(description).trim();
+    category_id = validator.escape(category_id.trim());
 
     // price OR stock not a number?
     if (typeof price !== "number") {
@@ -107,10 +107,10 @@ export const updateProduct: RequestHandler<
     }
 
     // payload & params sanitation
-    id = validator.escape(id);
-    if (name) name = validator.escape(name);
-    if (description) description = validator.escape(description);
-    if (category_id) category_id = validator.escape(category_id);
+    id = validator.escape(id.trim());
+    if (name) name = validator.escape(name.trim());
+    if (description) description = validator.escape(description.trim());
+    if (category_id) category_id = validator.escape(category_id.trim());
 
     // price OR stock not a number?
     if (typeof price !== "number") {
@@ -136,8 +136,8 @@ export const deleteProduct: RequestHandler<IdParams, ApiResponse> = async (
 ) => {
     let { id } = req.params;
 
-    // input sanitation
-    id = validator.escape(id);
+    // payload sanitation
+    id = validator.escape(id.trim());
 
     const deletedProduct = await productService.deleteProduct(id);
 
