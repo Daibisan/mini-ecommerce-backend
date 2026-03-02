@@ -49,13 +49,13 @@ export const createProduct: RequestHandler<
     }
 
     // name OR desc OR category_id is a number?
-    if (name && typeof name === "number") {
+    if (typeof name === "number") {
         throw new AppError("Product's name should be a string", 400);
     }
-    if (description && typeof description === "number") {
+    if (typeof description === "number") {
         throw new AppError("Product's desc should be a string", 400);
     }
-    if (category_id && typeof category_id === "number") {
+    if (typeof category_id === "number") {
         throw new AppError("Product's category should be a string", 400);
     }
 
