@@ -48,6 +48,11 @@ export const createCategory: RequestHandler<
         throw new AppError("Category's name must be filled", 400);
     }
 
+    // name is a number?
+    if (typeof name === "number") {
+        throw new AppError("Category's name should be a string", 400);
+    }
+
     // payload sanitation
     name = validator.escape(name.trim());
 
@@ -76,6 +81,11 @@ export const updateCategory: RequestHandler<
     // empty payload?
     if (!name) {
         throw new AppError("Category's name must be filled", 400);
+    }
+
+    // name is a number?
+    if (typeof name === "number") {
+        throw new AppError("Category's name should be a string", 400);
     }
 
     // payload sanitation
