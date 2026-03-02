@@ -40,7 +40,7 @@ const updateCategory = async (id: string, name: string) => {
     const nameExists = await prisma.category.findUnique({
         where: { name },
     });
-    if (nameExists) {
+    if (nameExists && nameExists.category_id !== id ) {
         throw new AppError("Category's name already exists", 409);
     }
 
