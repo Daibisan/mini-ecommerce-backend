@@ -12,13 +12,16 @@ const getCategory = async (id: string) => {
 
 // ADMIN
 const createCategory = async (name: string) => {
-    // duplicate category's name?
-    const nameExists = await prisma.category.findUnique({
-        where: { name },
+    // duplicate category's name (case-sensitive)?
+    const nameExists = await prisma.category.findFirst({
+        where: {
+            name: {
+                equals: name,
+                mode: "insensitive",
+            },
+        },
     });
-    if (nameExists) {
-        throw new AppError("Category already exists", 409);
-    }
+    if (nameExists) throw new AppError("Category already exists", 409);
 
     const newCategory = await prisma.category.create({
         data: { name },
@@ -37,12 +40,16 @@ const updateCategory = async (id: string, name: string) => {
     }
 
     // duplicate category's name?
-    const nameExists = await prisma.category.findUnique({
-        where: { name },
+    const nameExists = await prisma.category.findFirst({
+        where: {
+            name: {
+                equals: name,
+                mode: "insensitive",
+            },
+        },
     });
-    if (nameExists && nameExists.category_id !== id ) {
+    if (nameExists && nameExists.category_id !== id)
         throw new AppError("Category's name already exists", 409);
-    }
 
     const updatedCategory = await prisma.category.update({
         where: { category_id: id },
