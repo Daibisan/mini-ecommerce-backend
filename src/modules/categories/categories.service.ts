@@ -7,7 +7,11 @@ const getAllCategories = async () => {
 };
 
 const getCategory = async (id: string) => {
-    return await prisma.category.findUnique({ where: { category_id: id } });
+    const category = await prisma.category.findUnique({ where: { category_id: id } });
+    if (!category) {
+        throw new AppError("Category not found", 404);
+    }
+    return category;
 };
 
 // ADMIN
