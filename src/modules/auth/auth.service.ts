@@ -1,14 +1,8 @@
 import { prisma } from "../../lib/prisma.js";
-import { env } from "../../config/env.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import validator from "validator";
 import AppError from "../../utils/appError.util.js";
-import { Role } from "../../generated/prisma/enums.js";
-
-const createToken = (user_id: string, role: Role) => {
-    return jwt.sign({ user_id, role }, env.JWT_SECRET, { expiresIn: "3d" });
-};
+import { createToken } from "../../lib/jwt.js";
 
 export const createUser = async (
     username: string,

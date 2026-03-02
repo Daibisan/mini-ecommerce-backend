@@ -1,14 +1,9 @@
 import { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
 import AppError from "../utils/appError.util.js";
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
-import { Role } from "../generated/prisma/enums.js";
-
-interface JwtPayload {
-    user_id: string;
-    role: Role;
-}
+import { verifyToken } from "../lib/jwt.js";
+import { JwtPayload } from "../types/jwt.interface.js";
 
 const requireAuth: RequestHandler = async (req, res, next) => {
     // check header
@@ -25,10 +20,7 @@ const requireAuth: RequestHandler = async (req, res, next) => {
     try {
         // verify token
         const token = authorization.split(" ")[1];
-        const { user_id, role } = jwt.verify(
-            token,
-            env.JWT_SECRET,
-        ) as JwtPayload;
+        const { user_id, role }: JwtPayload = verifyToken(token);
 
         // verify user_id
         const user = await prisma.user.findUnique({
