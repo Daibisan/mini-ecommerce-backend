@@ -52,8 +52,8 @@ export const createCategory: RequestHandler<
     name = validator.escape(name.trim());
 
     // name contains number?
-    if (!validator.isAlpha(name)) {
-        throw new AppError("Category name can not contain number", 400);
+    if (validator.isNumeric(name)) {
+        throw new AppError("Category name can not only number", 400);
     }
 
     const newCategory = await categoryService.createCategory(name);
@@ -83,8 +83,8 @@ export const updateCategory: RequestHandler<
     name = validator.escape(name.trim());
 
     // name contains number?
-    if (!validator.isAlpha(name)) {
-        throw new AppError("Category name can not contain number", 400);
+    if (validator.isNumeric(name)) {
+        throw new AppError("Category name can not only number", 400);
     }
 
     const updatedCategory = await categoryService.updateCategory(id, name);
