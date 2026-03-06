@@ -12,6 +12,7 @@ services:
             POSTGRES_DB: mini_ecommerce
         volumes:
             - postgres_data:/var/lib/postgresql/data
+            - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
     postgres_data:

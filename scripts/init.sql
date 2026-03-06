@@ -1,0 +1,1 @@
+CREATE DATABASE mini_ecommerce_db_test;
