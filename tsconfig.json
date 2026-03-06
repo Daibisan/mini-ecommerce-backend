@@ -5,6 +5,7 @@
     "moduleResolution": "NodeNext",
     "rootDir": "./src",
     "outDir": "./dist",
+    "types": ["node", "vitest/globals"],
 
     "strict": true,
     "skipLibCheck": true,
@@ -17,5 +18,5 @@
 
     "sourceMap": true
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
