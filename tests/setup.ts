@@ -3,11 +3,7 @@ import { env } from "../src/config/env.js";
 import bcrypt from "bcrypt";
 import { ADMIN_ID } from "./test.config.js";
 
-beforeEach(async () => {
-    await prisma.product.deleteMany();
-    await prisma.category.deleteMany();
-    await prisma.user.deleteMany();
-
+beforeAll(async () => {
     // Add admin acc
     const password_hash = await bcrypt.hash(env.ADMIN.pw, 11);
     await prisma.user.upsert({
@@ -21,4 +17,9 @@ beforeEach(async () => {
         },
         where: { email: env.ADMIN.email },
     });
+})
+
+beforeEach(async () => {
+    await prisma.product.deleteMany();
+    await prisma.category.deleteMany();
 });
