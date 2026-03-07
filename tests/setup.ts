@@ -17,9 +17,14 @@ beforeAll(async () => {
         },
         where: { email: env.ADMIN.email },
     });
-})
+});
 
 beforeEach(async () => {
     await prisma.product.deleteMany();
     await prisma.category.deleteMany();
+    await prisma.user.deleteMany({
+        where: {
+            user_id: { not: ADMIN_ID },
+        },
+    });
 });
