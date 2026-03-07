@@ -186,3 +186,33 @@ describe("PATCH /api/categories/:id", () => {
         expect(response.body.success).toBe(false);
     });
 });
+
+describe("DELETE /api/categories/:id", () => {
+    it("success: id valid & isAdmin", async () => {
+        const targetedCategory = await prisma.category.create({
+            data: { name: "Test" },
+        });
+
+        const id = targetedCategory.category_id;
+        const adminToken = getAdminToken();
+
+        const response = await request(app)
+            .delete(`/api/categories/${id}`)
+            .set("Authorization", `Bearer ${adminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+    });
+
+    it("error: category not found", async () => {
+        const id = "test321";
+        const adminToken = getAdminToken();
+
+        const response = await request(app)
+            .delete(`/api/categories/${id}`)
+            .set("Authorization", `Bearer ${adminToken}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+    });
+});
