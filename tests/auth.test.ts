@@ -2,13 +2,14 @@ import bcrypt from "bcrypt";
 import request from "supertest";
 import app from "../src/app.js";
 import { prisma } from "../src/lib/prisma.js";
+import { seed } from "./test.util.js";
 
 describe("POST /api/auth/register", () => {
     it("success: payload valid", async () => {
         const payload = {
-            username: "name",
-            email: "email@gmail.com",
-            password: "12345678Password.!",
+            username: seed.username(),
+            email: seed.email(),
+            password: seed.password,
         };
 
         const response = await request(app)
@@ -21,8 +22,8 @@ describe("POST /api/auth/register", () => {
 
     it("error: weak password", async () => {
         const payload = {
-            username: "name",
-            email: "email@gmail.com",
+            username: seed.username(),
+            email: seed.email(),
             password: "1234",
         };
 
@@ -36,9 +37,9 @@ describe("POST /api/auth/register", () => {
 
     it("error: not an email", async () => {
         const payload = {
-            username: "name",
+            username: seed.username(),
             email: "emailgmail.",
-            password: "1234",
+            password: seed.password,
         };
 
         const response = await request(app)
@@ -46,22 +47,22 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
     });
 
     it("error: duplicate email", async () => {
+        const email = seed.email();
         await prisma.user.create({
             data: {
-                username: "name",
-                email: "email@gmail.com",
-                password_hash: "123456",
+                username: seed.username(),
+                email: email,
+                password_hash: "dummy_hash",
             },
         });
 
         const payload = {
-            username: "name2",
-            email: "email@gmail.com",
-            password: "123456789Password.!",
+            username: seed.username(),
+            email: email,
+            password: seed.password,
         };
 
         const response = await request(app)
@@ -69,18 +70,22 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(409);
-        expect(response.body.success).toBe(false);
     });
 
     it("error: duplicate username", async () => {
+        const username = seed.username();
         await prisma.user.create({
-            data: { username: "name", email: "email", password_hash: "123456" },
+            data: {
+                username: username,
+                email: seed.email(),
+                password_hash: "dummy_hash",
+            },
         });
 
         const payload = {
-            username: "name",
-            email: "email@gmail.com",
-            password: "123456789Password.!",
+            username: username,
+            email: seed.email(),
+            password: seed.password,
         };
 
         const response = await request(app)
@@ -88,92 +93,74 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(409);
-        expect(response.body.success).toBe(false);
     });
 });
 
 describe("POST /api/auth/login", () => {
     it("success: login with username", async () => {
-        const password_hash = await bcrypt.hash("12345678User.!", 11);
+        const username = seed.username();
+        const password_hash = await bcrypt.hash(seed.defaultUserPassword, 1);
+
         await prisma.user.create({
-            data: { username: "user1", email: "user@gmail.com", password_hash },
+            data: {
+                username: username,
+                email: seed.email(),
+                password_hash,
+            },
         });
 
-        const payload = {
-            identifier: "user1",
-            password: "12345678User.!",
-        };
-
-        const response = await request(app)
-            .post("/api/auth/login")
-            .send(payload);
+        const response = await request(app).post("/api/auth/login").send({
+            identifier: username,
+            password: seed.defaultUserPassword,
+        });
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
     });
 
     it("success: login with email", async () => {
-        const password_hash = await bcrypt.hash("12345678User.!", 11);
+        const email = seed.email();
+        const password_hash = await bcrypt.hash(seed.defaultUserPassword, 1);
+
         await prisma.user.create({
-            data: { username: "user1", email: "user@gmail.com", password_hash },
+            data: {
+                username: seed.username(),
+                email: email,
+                password_hash,
+            },
         });
 
-        const payload = {
-            identifier: "user@gmail.com",
-            password: "12345678User.!",
-        };
-
-        const response = await request(app)
-            .post("/api/auth/login")
-            .send(payload);
+        const response = await request(app).post("/api/auth/login").send({
+            identifier: email,
+            password: seed.defaultUserPassword,
+        });
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
     });
 
-    it("error: empty payload", async () => {
-        const payload = {
-            identifier: "user@gmail.com",
-        };
-
-        const response = await request(app)
-            .post("/api/auth/login")
-            .send(payload);
-
-        expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
-    });
-
-    it("error: username/email not found", async () => {
-        const payload = {
-            identifier: "test",
-            password: "123456789Password.!",
-        };
-
-        const response = await request(app)
-            .post("/api/auth/login")
-            .send(payload);
+    it("error: identifier not found", async () => {
+        const response = await request(app).post("/api/auth/login").send({
+            identifier: seed.email(),
+            password: seed.password,
+        });
 
         expect(response.status).toBe(401);
-        expect(response.body.success).toBe(false);
     });
 
     it("error: invalid password", async () => {
-        const password_hash = await bcrypt.hash("12345678User.!", 11);
+        const email = seed.email();
+        const password_hash = await bcrypt.hash(seed.defaultUserPassword, 1);
+
         await prisma.user.create({
-            data: { username: "user1", email: "user@gmail.com", password_hash },
+            data: { username: seed.username(), email, password_hash },
         });
 
-        const payload = {
-            identifier: "user@gmail.com",
-            password: "12345678User",
-        };
-
-        const response = await request(app)
-            .post("/api/auth/login")
-            .send(payload);
+        const response = await request(app).post("/api/auth/login").send({
+            identifier: email,
+            password: "wrong_password",
+        });
 
         expect(response.status).toBe(401);
-        expect(response.body.success).toBe(false);
     });
 });

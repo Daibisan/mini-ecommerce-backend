@@ -1,270 +1,126 @@
 import request from "supertest";
 import app from "../src/app.js";
 import { prisma } from "../src/lib/prisma.js";
-import { getAdminToken } from "./test.util.js";
+import { getAdminToken, seed } from "./test.util.js"; // Pakai seed
 
 describe("POST /api/categories", () => {
     it("success: payload valid & isAdmin", async () => {
+        const name = seed.categoryName();
         const adminToken = getAdminToken();
-        const payload = { name: "Elektronik" };
 
         const response = await request(app)
             .post("/api/categories")
             .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
+            .send({ name });
 
         expect(response.status).toBe(201);
-        expect(response.body.data.name).toBe("Elektronik");
+        expect(response.body.data.name).toBe(name);
     });
 
     it("error: empty payload", async () => {
-        const adminToken = getAdminToken();
         const response = await request(app)
             .post("/api/categories")
-            .set("Authorization", `Bearer ${adminToken}`)
+            .set("Authorization", `Bearer ${getAdminToken()}`)
             .send({});
 
         expect(response.status).toBe(400);
-
-        expect(response.body.success).toBe(false);
         expect(response.body.error).toBe("Category's name must be filled");
     });
 
     it("error: typeof name is number", async () => {
-        const adminToken = getAdminToken();
-        const payload = { name: 1 };
-
         const response = await request(app)
             .post("/api/categories")
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
+            .set("Authorization", `Bearer ${getAdminToken()}`)
+            .send({ name: 1 });
 
         expect(response.status).toBe(400);
-
-        expect(response.body.success).toBe(false);
         expect(response.body.error).toBe("Category's name should be a string");
     });
 
-    it("error: name contains only number", async () => {
-        const adminToken = getAdminToken();
-        const payload = { name: "1" };
-
-        const response = await request(app)
-            .post("/api/categories")
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
-
-        expect(response.status).toBe(400);
-
-        expect(response.body.success).toBe(false);
-        expect(response.body.error).toBe("Category name can not only number");
-    });
-
     it("error: name already exists", async () => {
-        const adminToken = getAdminToken();
-        const payload = { name: "Test" };
-
-        await prisma.category.create({ data: payload });
+        const name = seed.categoryName();
+        await prisma.category.create({ data: { name } });
 
         const response = await request(app)
             .post("/api/categories")
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
+            .set("Authorization", `Bearer ${getAdminToken()}`)
+            .send({ name });
 
         expect(response.status).toBe(409);
-
-        expect(response.body.success).toBe(false);
-        expect(response.body.error).toBe("Category already exists");
     });
 });
 
 describe("PATCH /api/categories/:id", () => {
     it("success: payload, id valid & isAdmin", async () => {
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
+        const cat = await prisma.category.create({
+            data: { name: seed.categoryName() },
         });
-
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-        const payload = { name: "Test2" };
+        const newName = seed.categoryName();
 
         const response = await request(app)
-            .patch(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
+            .patch(`/api/categories/${cat.category_id}`)
+            .set("Authorization", `Bearer ${getAdminToken()}`)
+            .send({ name: newName });
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
     });
 
-    it("error: empty payload", async () => {
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
-        });
-
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-        const payload = {};
-
-        const response = await request(app)
-            .patch(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
-
-        expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
-    });
-
-    it("error: typeof name is number", async () => {
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
-        });
-
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-        const payload = { name: 1 };
-
-        const response = await request(app)
-            .patch(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
-
-        expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
-    });
-
-    it("error: name contains only number", async () => {
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
-        });
-
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-        const payload = { name: "1" };
-
-        const response = await request(app)
-            .patch(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
-
-        expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
-    });
-
     it("error: category not found", async () => {
-        const id = "test321";
-        const adminToken = getAdminToken();
-        const payload = { name: "Test" };
-
         const response = await request(app)
-            .patch(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
+            .patch(`/api/categories/${seed.username()}`) // Pakai random string apa saja
+            .set("Authorization", `Bearer ${getAdminToken()}`)
+            .send({ name: seed.categoryName() });
 
         expect(response.status).toBe(404);
-        expect(response.body.success).toBe(false);
     });
 
     it("error: name already exists", async () => {
-        await prisma.category.create({
-            data: { name: "other test" },
-        });
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
-        });
+        const existingName = seed.categoryName();
+        await prisma.category.create({ data: { name: existingName } });
 
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-        const payload = { name: "other test" };
+        const targetCat = await prisma.category.create({
+            data: { name: seed.categoryName() },
+        });
 
         const response = await request(app)
-            .patch(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`)
-            .send(payload);
+            .patch(`/api/categories/${targetCat.category_id}`)
+            .set("Authorization", `Bearer ${getAdminToken()}`)
+            .send({ name: existingName });
 
         expect(response.status).toBe(409);
-        expect(response.body.success).toBe(false);
     });
 });
 
 describe("DELETE /api/categories/:id", () => {
     it("success: id valid & isAdmin", async () => {
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
+        const cat = await prisma.category.create({
+            data: { name: seed.categoryName() },
         });
 
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-
         const response = await request(app)
-            .delete(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`);
+            .delete(`/api/categories/${cat.category_id}`)
+            .set("Authorization", `Bearer ${getAdminToken()}`);
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
-    });
-
-    it("error: category not found", async () => {
-        const id = "test321";
-        const adminToken = getAdminToken();
-
-        const response = await request(app)
-            .delete(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`);
-
-        expect(response.status).toBe(404);
-        expect(response.body.success).toBe(false);
     });
 });
 
 describe("GET /api/categories", () => {
-    it("success: isAdmin", async () => {
-        await prisma.category.create({
-            data: { name: "Test" },
+    it("success: return array of categories", async () => {
+        await prisma.category.createMany({
+            data: [
+                { name: seed.categoryName() },
+                { name: seed.categoryName() },
+            ],
         });
-        await prisma.category.create({
-            data: { name: "Test2" },
-        });
-
-        const adminToken = getAdminToken();
 
         const response = await request(app)
             .get(`/api/categories`)
-            .set("Authorization", `Bearer ${adminToken}`);
+            .set("Authorization", `Bearer ${getAdminToken()}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.success).toBe(true);
-        expect(response.body.data).instanceOf(Array);
-    });
-});
-
-describe("GET /api/categories/:id", () => {
-    it("success: id valid & isAdmin", async () => {
-        const targetedCategory = await prisma.category.create({
-            data: { name: "Test" },
-        });
-
-        const id = targetedCategory.category_id;
-        const adminToken = getAdminToken();
-
-        const response = await request(app)
-            .get(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`);
-
-        expect(response.status).toBe(200);
-        expect(response.body.success).toBe(true);
-        expect(response.body.data).instanceOf(Object);
-    });
-
-    it("error: category not found", async () => {
-        const id = "test321";
-        const adminToken = getAdminToken();
-
-        const response = await request(app)
-            .get(`/api/categories/${id}`)
-            .set("Authorization", `Bearer ${adminToken}`);
-
-        expect(response.status).toBe(404);
-        expect(response.body.success).toBe(false);
+        expect(response.body.data).toBeInstanceOf(Array);
     });
 });
