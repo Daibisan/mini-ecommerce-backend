@@ -1,60 +1,93 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+    provider = "prisma-client"
+    output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+    provider = "postgresql"
 }
 
 enum Role {
-  USER
-  ADMIN
+    USER
+    ADMIN
 }
 
 enum ProductStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
+    DRAFT
+    ACTIVE
+    ARCHIVED
 }
 
 model User {
-  user_id       String   @id @default(uuid())
-  username      String   @unique
-  email         String   @unique
-  password_hash String
-  role          Role     @default(USER)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+    user_id       String   @id @default(uuid())
+    username      String   @unique
+    email         String   @unique
+    password_hash String
+    role          Role     @default(USER)
+    created_at    DateTime @default(now())
+    updated_at    DateTime @updatedAt
 
-  @@map("users")
+    cart Cart?
+
+    @@map("users")
 }
 
 model Category {
-  category_id String   @id @default(uuid())
-  name        String   @unique
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+    category_id String   @id @default(uuid())
+    name        String   @unique
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
 
-  // mendefinisikan relasi
-  products Product[]
+    // mendefinisikan relasi
+    products Product[]
 
-  @@map("categories")
+    @@map("categories")
 }
 
 model Product {
-  product_id  String        @id @default(uuid())
-  name        String        @unique
-  description String?
-  price       Decimal
-  stock       Int
-  status      ProductStatus @default(DRAFT)
-  created_at  DateTime      @default(now())
-  updated_at  DateTime      @updatedAt
-  category_id String
+    product_id  String        @id @default(uuid())
+    name        String        @unique
+    description String?
+    price       Decimal
+    stock       Int
+    status      ProductStatus @default(DRAFT)
+    created_at  DateTime      @default(now())
+    updated_at  DateTime      @updatedAt
+    category_id String
 
-  // mendefinisikan relasi
-  category Category @relation(fields: [category_id], references: [category_id])
+    // mendefinisikan relasi
+    category   Category   @relation(fields: [category_id], references: [category_id])
+    cart_items CartItem[]
 
-  @@map("products")
+    @@map("products")
+}
+
+model Cart {
+    cart_id    String   @id @default(uuid())
+    user_id    String   @unique
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relasi
+    user  User       @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+    items CartItem[]
+
+    @@map("carts")
+}
+
+model CartItem {
+    cart_item_id String   @id @default(uuid())
+    cart_id      String
+    product_id   String
+    quantity     Int      @default(1)
+    created_at   DateTime @default(now())
+    updated_at   DateTime @updatedAt
+
+    // Relasi
+    cart    Cart    @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade)
+    product Product @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+    // Memastikan 1 produk cuma ada 1 baris per keranjang
+    @@unique([cart_id, product_id])
+    @@map("cart_items")
 }
