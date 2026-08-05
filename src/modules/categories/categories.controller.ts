@@ -92,7 +92,7 @@ export const updateCategory: RequestHandler<
     id = validator.escape(id.trim());
     name = validator.escape(name.trim());
 
-    // name contains number?
+    // name contains only number?
     if (validator.isNumeric(name)) {
         throw new AppError("Category name can not only number", 400);
     }
