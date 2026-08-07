@@ -1,0 +1,65 @@
+import { prisma } from "../../lib/prisma.js";
+import AppError from "../../utils/appError.util.js";
+
+const addToCart = async (
+    product_id: string,
+    quantity: number,
+    user_id: string,
+) => {
+    // Check product existance
+    const product = await prisma.product.findUnique({
+        where: { product_id },
+    });
+    if (!product) {
+        throw new AppError("Product not found", 404);
+    }
+    // Check product stock
+    if (quantity > product.stock) {
+        throw new AppError("Quantity higher than the stock", 400);
+    }
+
+    // Check cart existence
+    let cart = await prisma.cart.findUnique({
+        where: { user_id },
+    });
+    if (!cart) {
+        cart = await prisma.cart.create({
+            data: {
+                user_id,
+            },
+        });
+    }
+
+    // Check product existance in cart through cartItems
+    const cart_id = cart.cart_id;
+
+    let cartItem = await prisma.cartItem.findFirst({
+        where: { cart_id, product_id },
+    });
+
+    if (cartItem) {
+        // Just add the quantity if cartItem found
+        const newQuantity = cartItem.quantity + quantity;
+
+        cartItem = await prisma.cartItem.update({
+            where: { cart_item_id: cartItem.cart_item_id },
+            data: { quantity: newQuantity },
+        });
+
+        return cartItem;
+    }
+
+    // Add product to cart through cartItems
+    const addedProduct = await prisma.cartItem.create({
+        data: {
+            cart_id,
+            product_id,
+            quantity,
+        },
+    });
+    return addedProduct;
+};
+
+export const cartService = {
+    addToCart,
+};

@@ -6,6 +6,7 @@ import { auth_router } from "./modules/auth/auth.route.js";
 import { categories_router } from "./modules/categories/categories.route.js";
 import helmet from "helmet";
 import { products_router } from "./modules/products/products.route.js";
+import { cart_router } from "./modules/cart/cart.route.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", auth_router);
 app.use("/api/categories", categories_router);
 app.use("/api/products", products_router);
+app.use("/api/cart", cart_router);
 
 // error handler
 app.use(errorHandler);
