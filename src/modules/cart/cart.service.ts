@@ -41,12 +41,14 @@ const addToCart = async (
         // Just add the quantity if cartItem found
         const newQuantity = cartItem.quantity + quantity;
 
-        cartItem = await prisma.cartItem.update({
+        return await prisma.cartItem.update({
             where: { cart_item_id: cartItem.cart_item_id },
             data: { quantity: newQuantity },
+            omit: {
+                created_at: true,
+                updated_at: true,
+            },
         });
-
-        return cartItem;
     }
 
     // Add product to cart through cartItems
@@ -55,6 +57,10 @@ const addToCart = async (
             cart_id,
             product_id,
             quantity,
+        },
+        omit: {
+            created_at: true,
+            updated_at: true,
         },
     });
     return addedProduct;
