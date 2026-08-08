@@ -60,6 +60,30 @@ const addToCart = async (
     return addedProduct;
 };
 
+const getCart = async (user_id: string) => {
+    return await prisma.cart.findMany({
+        where: { user_id },
+        select: {
+            cart_id: true,
+            user_id: true,
+            items: {
+                select: {
+                    cart_item_id: true,
+                    product_id: true,
+                    quantity: true,
+                    product: {
+                        select: {
+                            name: true,
+                            price: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+};
+
 export const cartService = {
     addToCart,
+    getCart,
 };

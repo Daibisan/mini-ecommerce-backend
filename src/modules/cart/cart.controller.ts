@@ -6,7 +6,6 @@ import { AddToCartRequest } from "../../types/cart.interface.js";
 import { cartService } from "./cart.service.js";
 import { User } from "../../types/auth.interface.js";
 
-// ADMIN
 export const addToCart: RequestHandler<
     {},
     ApiResponse,
@@ -31,11 +30,25 @@ export const addToCart: RequestHandler<
     product_id = product_id.trim();
 
     const { user_id } = req.user as User;
-    const addedProduct = await cartService.addToCart(product_id, quantity, user_id);
+    const addedProduct = await cartService.addToCart(
+        product_id,
+        quantity,
+        user_id,
+    );
 
     res.status(200).json({
         success: true,
         message: "Product added to cart!",
         data: addedProduct,
+    });
+};
+
+export const getCart: RequestHandler<{}, ApiResponse> = async (req, res) => {
+    const { user_id } = req.user as User;
+    const cart = await cartService.getCart(user_id);
+
+    res.status(200).json({
+        success: true,
+        data: cart,
     });
 };

@@ -1,13 +1,13 @@
 import express from "express";
 import requireAuth from "../../middleware/requireAuth.middleware.js";
 import authorize from "../../middleware/authorize.middleware.js";
-import { addToCart } from "./cart.controller.js";
+import { addToCart, getCart } from "./cart.controller.js";
 
 const router = express.Router();
 
 router.use(requireAuth);
 
-// router.get("/", );
+router.get("/", getCart);
 // router.delete("/", );
 
 router.post("/items", addToCart);
