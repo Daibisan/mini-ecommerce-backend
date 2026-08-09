@@ -13,10 +13,6 @@ const addToCart = async (
     if (!product) {
         throw new AppError("Product not found", 404);
     }
-    // Check product stock
-    if (quantity > product.stock) {
-        throw new AppError("Quantity higher than the stock", 400);
-    }
 
     // Check cart existence
     let cart = await prisma.cart.findUnique({
@@ -30,7 +26,7 @@ const addToCart = async (
         });
     }
 
-    // Check product existance in cart through cartItems
+    // Check cartItem existance
     const cart_id = cart.cart_id;
 
     let cartItem = await prisma.cartItem.findFirst({
@@ -41,6 +37,11 @@ const addToCart = async (
         // Just add the quantity if cartItem found
         const newQuantity = cartItem.quantity + quantity;
 
+        // Check product stock
+        if (newQuantity > product.stock) {
+            throw new AppError("Quantity higher than the stock", 400);
+        }
+
         return await prisma.cartItem.update({
             where: { cart_item_id: cartItem.cart_item_id },
             data: { quantity: newQuantity },
@@ -49,6 +50,11 @@ const addToCart = async (
                 updated_at: true,
             },
         });
+    }
+
+    // Check product stock
+    if (quantity > product.stock) {
+        throw new AppError("Quantity higher than the stock", 400);
     }
 
     // Add product to cart through cartItems
@@ -93,10 +99,22 @@ const updateCartItem = async (cart_item_id: string, quantity: number) => {
     // Check cartItem existance
     const cartItem = await prisma.cartItem.findFirst({
         where: { cart_item_id },
+        select: {
+            product: {
+                select: {
+                    stock: true,
+                },
+            },
+        },
     });
 
     if (!cartItem) {
         throw new AppError("CartItem not found", 404);
+    }
+
+    // Check product stock
+    if (quantity > cartItem.product.stock) {
+        throw new AppError("Quantity higher than the stock", 400);
     }
 
     return await prisma.cartItem.update({
