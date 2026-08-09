@@ -67,7 +67,7 @@ const addToCart = async (
 };
 
 const getCart = async (user_id: string) => {
-    return await prisma.cart.findMany({
+    return await prisma.cart.findUnique({
         where: { user_id },
         select: {
             cart_id: true,
