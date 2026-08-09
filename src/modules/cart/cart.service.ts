@@ -89,7 +89,28 @@ const getCart = async (user_id: string) => {
     });
 };
 
+const updateCartItem = async (cart_item_id: string, quantity: number) => {
+    // Check cartItem existance
+    const cartItem = await prisma.cartItem.findFirst({
+        where: { cart_item_id },
+    });
+
+    if (!cartItem) {
+        throw new AppError("CartItem not found", 404);
+    }
+
+    return await prisma.cartItem.update({
+        where: { cart_item_id },
+        data: { quantity },
+        select: {
+            cart_item_id: true,
+            quantity: true,
+        },
+    });
+};
+
 export const cartService = {
     addToCart,
     getCart,
+    updateCartItem,
 };
