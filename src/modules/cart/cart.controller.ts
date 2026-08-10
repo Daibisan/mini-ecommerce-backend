@@ -91,3 +91,44 @@ export const updateQuantity: RequestHandler<
         data: updatedCartItem,
     });
 };
+
+export const removeCartItem: RequestHandler<IdParams, ApiResponse> = async (
+    req,
+    res,
+) => {
+    let { id: cart_item_id } = req.params;
+
+    // empty check
+    if (!cart_item_id) {
+        throw new AppError("Params must be filled", 400);
+    }
+
+    // type check
+    if (typeof cart_item_id !== "string") {
+        throw new AppError("Parameter Id should be a string", 400);
+    }
+
+    // sanitation
+    cart_item_id = cart_item_id.trim();
+
+    await cartService.removeCartItem(cart_item_id);
+
+    res.status(200).json({
+        success: true,
+        message: "Item removed from cart",
+    });
+};
+
+export const clearCart: RequestHandler<{}, ApiResponse> = async (
+    req,
+    res,
+) => {
+    const { user_id } = req.user as User;
+
+    await cartService.clearCart(user_id);
+
+    res.status(200).json({
+        success: true,
+        message: "Cart cleared successfully",
+    });
+};

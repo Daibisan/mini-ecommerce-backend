@@ -127,8 +127,35 @@ const updateCartItem = async (cart_item_id: string, quantity: number) => {
     });
 };
 
+const removeCartItem = async (cart_item_id: string) => {
+    // Check cartItem existance
+    const cartItem = await prisma.cartItem.findUnique({
+        where: { cart_item_id },
+    });
+
+    if (!cartItem) {
+        throw new AppError("CartItem not found", 404);
+    }
+
+    await prisma.cartItem.delete({
+        where: { cart_item_id },
+    });
+};
+
+const clearCart = async (user_id: string) => {
+    await prisma.cartItem.deleteMany({
+        where: {
+            cart: {
+                user_id,
+            },
+        },
+    });
+};
+
 export const cartService = {
     addToCart,
     getCart,
     updateCartItem,
+    removeCartItem,
+    clearCart,
 };
