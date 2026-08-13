@@ -70,7 +70,7 @@ export const createCategory = async (
 };
 
 export const updateCategory = async (
-    req: Request<IdParams, {}, CategoryRequest>,
+    req: Request<IdParams, {}, Partial<CategoryRequest>>,
     res: Response<ApiResponse>,
 ) => {
     let { id } = req.params;

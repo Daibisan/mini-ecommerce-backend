@@ -82,7 +82,7 @@ export const createProduct = async (
 };
 
 export const updateProduct = async (
-    req: Request<IdParams, {}, ProductRequest>,
+    req: Request<IdParams, {}, Partial<ProductRequest>>,
     res: Response<ApiResponse>,
 ) => {
     let { id } = req.params;
