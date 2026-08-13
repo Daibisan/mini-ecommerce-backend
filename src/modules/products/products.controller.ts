@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { ApiResponse, IdParams } from "../../types/api.interface.js";
@@ -6,9 +6,9 @@ import { ProductRequest } from "../../types/products.intereface.js";
 import { productService } from "./products.service.js";
 
 // PUBLIC
-export const getAllProducts: RequestHandler<{}, ApiResponse> = async (
-    req,
-    res,
+export const getAllProducts = async (
+    req: Request,
+    res: Response<ApiResponse>,
 ) => {
     const product = await productService.getAllProducts();
 
@@ -18,9 +18,9 @@ export const getAllProducts: RequestHandler<{}, ApiResponse> = async (
     });
 };
 
-export const getProduct: RequestHandler<IdParams, ApiResponse> = async (
-    req,
-    res,
+export const getProduct = async (
+    req: Request<IdParams>,
+    res: Response<ApiResponse>,
 ) => {
     let { id } = req.params;
 
@@ -36,11 +36,10 @@ export const getProduct: RequestHandler<IdParams, ApiResponse> = async (
 };
 
 // ADMIN
-export const createProduct: RequestHandler<
-    {},
-    ApiResponse,
-    ProductRequest
-> = async (req, res) => {
+export const createProduct = async (
+    req: Request<{}, {}, ProductRequest>,
+    res: Response<ApiResponse>,
+) => {
     let { name, description, price, stock, category_id } = req.body;
 
     // empty payload?
@@ -82,17 +81,19 @@ export const createProduct: RequestHandler<
     });
 };
 
-export const updateProduct: RequestHandler<
-    IdParams,
-    ApiResponse,
-    Partial<ProductRequest>
-> = async (req, res) => {
+export const updateProduct = async (
+    req: Request<IdParams, {}, ProductRequest>,
+    res: Response<ApiResponse>,
+) => {
     let { id } = req.params;
     let { name, description, price, stock, category_id } = req.body;
 
     // empty payload?
     if (!name && !price && !stock && !category_id && !description) {
-        throw new AppError("New Product's data must be filled at least one", 400);
+        throw new AppError(
+            "New Product's data must be filled at least one",
+            400,
+        );
     }
 
     // name OR desc OR category_id is a number?
@@ -130,9 +131,9 @@ export const updateProduct: RequestHandler<
     });
 };
 
-export const deleteProduct: RequestHandler<IdParams, ApiResponse> = async (
-    req,
-    res,
+export const deleteProduct = async (
+    req: Request<IdParams>,
+    res: Response<ApiResponse>,
 ) => {
     let { id } = req.params;
 

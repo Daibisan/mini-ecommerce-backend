@@ -1,13 +1,13 @@
-import { RequestHandler } from "express";
+import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { createUser, loginUser } from "./auth.service.js";
 import { ApiResponse } from "../../types/api.interface.js";
 import { LoginBody, RegisterBody } from "../../types/auth.interface.js";
 
-export const register: RequestHandler<{}, ApiResponse, RegisterBody> = async (
-    req,
-    res,
+export const register = async (
+    req: Request<{}, {}, RegisterBody>,
+    res: Response<ApiResponse>,
 ) => {
     let { username, email, password } = req.body;
 
@@ -39,9 +39,9 @@ export const register: RequestHandler<{}, ApiResponse, RegisterBody> = async (
     });
 };
 
-export const login: RequestHandler<{}, ApiResponse, LoginBody> = async (
-    req,
-    res,
+export const login = async (
+    req: Request<{}, {}, LoginBody>,
+    res: Response<ApiResponse>,
 ) => {
     let { identifier, password } = req.body;
 

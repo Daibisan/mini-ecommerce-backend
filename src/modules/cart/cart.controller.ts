@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { ApiResponse, IdParams } from "../../types/api.interface.js";
@@ -9,11 +9,10 @@ import {
 import { cartService } from "./cart.service.js";
 import { User } from "../../types/auth.interface.js";
 
-export const addToCart: RequestHandler<
-    {},
-    ApiResponse,
-    AddToCartRequest
-> = async (req, res) => {
+export const addToCart = async (
+    req: Request<{}, {}, AddToCartRequest>,
+    res: Response<ApiResponse>,
+) => {
     let { product_id, quantity } = req.body;
 
     // empty check
@@ -46,7 +45,7 @@ export const addToCart: RequestHandler<
     });
 };
 
-export const getCart: RequestHandler<{}, ApiResponse> = async (req, res) => {
+export const getCart = async (req: Request, res: Response<ApiResponse>) => {
     const { user_id } = req.user as User;
     const cart = await cartService.getCart(user_id);
 
@@ -56,11 +55,10 @@ export const getCart: RequestHandler<{}, ApiResponse> = async (req, res) => {
     });
 };
 
-export const updateQuantity: RequestHandler<
-    IdParams,
-    ApiResponse,
-    UpdateCartRequest
-> = async (req, res) => {
+export const updateQuantity = async (
+    req: Request<IdParams, {}, UpdateCartRequest>,
+    res: Response<ApiResponse>,
+) => {
     let { id: cart_item_id } = req.params;
     let { quantity } = req.body;
 
@@ -92,9 +90,9 @@ export const updateQuantity: RequestHandler<
     });
 };
 
-export const removeCartItem: RequestHandler<IdParams, ApiResponse> = async (
-    req,
-    res,
+export const removeCartItem = async (
+    req: Request<IdParams>,
+    res: Response<ApiResponse>,
 ) => {
     let { id: cart_item_id } = req.params;
 
@@ -119,10 +117,7 @@ export const removeCartItem: RequestHandler<IdParams, ApiResponse> = async (
     });
 };
 
-export const clearCart: RequestHandler<{}, ApiResponse> = async (
-    req,
-    res,
-) => {
+export const clearCart = async (req: Request, res: Response<ApiResponse>) => {
     const { user_id } = req.user as User;
 
     await cartService.clearCart(user_id);

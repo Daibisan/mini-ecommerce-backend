@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { categoryService } from "./categories.service.js";
@@ -6,9 +6,9 @@ import { ApiResponse, IdParams } from "../../types/api.interface.js";
 import { CategoryRequest } from "../../types/categories.intereface.js";
 
 // PUBLIC
-export const getAllCategories: RequestHandler<{}, ApiResponse> = async (
-    req,
-    res,
+export const getAllCategories = async (
+    req: Request,
+    res: Response<ApiResponse>,
 ) => {
     const categories = await categoryService.getAllCategories();
 
@@ -18,9 +18,9 @@ export const getAllCategories: RequestHandler<{}, ApiResponse> = async (
     });
 };
 
-export const getCategory: RequestHandler<IdParams, ApiResponse> = async (
-    req,
-    res,
+export const getCategory = async (
+    req: Request<IdParams>,
+    res: Response<ApiResponse>,
 ) => {
     let { id } = req.params;
 
@@ -36,11 +36,10 @@ export const getCategory: RequestHandler<IdParams, ApiResponse> = async (
 };
 
 // ADMIN
-export const createCategory: RequestHandler<
-    {},
-    ApiResponse,
-    CategoryRequest
-> = async (req, res) => {
+export const createCategory = async (
+    req: Request<{}, {}, CategoryRequest>,
+    res: Response<ApiResponse>,
+) => {
     let { name } = req.body;
 
     // empty payload?
@@ -70,11 +69,10 @@ export const createCategory: RequestHandler<
     });
 };
 
-export const updateCategory: RequestHandler<
-    IdParams,
-    ApiResponse,
-    CategoryRequest
-> = async (req, res) => {
+export const updateCategory = async (
+    req: Request<IdParams, {}, CategoryRequest>,
+    res: Response<ApiResponse>,
+) => {
     let { id } = req.params;
     let { name } = req.body;
 
@@ -106,9 +104,9 @@ export const updateCategory: RequestHandler<
     });
 };
 
-export const deleteCategory: RequestHandler<IdParams, ApiResponse> = async (
-    req,
-    res,
+export const deleteCategory = async (
+    req: Request<IdParams>,
+    res: Response<ApiResponse>,
 ) => {
     let { id } = req.params;
 
