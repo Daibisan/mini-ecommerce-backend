@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
-import validator from "validator";
 import { ApiResponse, IdParams } from "../../types/api.interface.js";
 import {
     AddToCartRequest,
@@ -60,7 +59,7 @@ export const updateQuantity = async (
     res: Response<ApiResponse>,
 ) => {
     let { id: cart_item_id } = req.params;
-    let { quantity } = req.body;
+    const { quantity } = req.body;
 
     // empty check
     if (!cart_item_id || !quantity) {

@@ -22,10 +22,7 @@ export const getCategory = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-
-    // payload sanitation
-    id = validator.escape(id.trim());
+    const { id } = req.params;
 
     const category = await categoryService.getCategory(id);
 
@@ -53,7 +50,7 @@ export const createCategory = async (
     }
 
     // payload sanitation
-    name = validator.escape(name.trim());
+    name = name.trim();
 
     // name contains number?
     if (validator.isNumeric(name)) {
@@ -87,8 +84,8 @@ export const updateCategory = async (
     }
 
     // payload sanitation
-    id = validator.escape(id.trim());
-    name = validator.escape(name.trim());
+    id = id.trim();
+    name = name.trim();
 
     // name contains only number?
     if (validator.isNumeric(name)) {
@@ -111,7 +108,7 @@ export const deleteCategory = async (
     let { id } = req.params;
 
     // payload sanitation
-    id = validator.escape(id.trim());
+    id = id.trim();
 
     const deletedCategory = await categoryService.deleteCategory(id);
 

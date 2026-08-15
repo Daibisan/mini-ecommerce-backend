@@ -25,7 +25,7 @@ export const getProduct = async (
     let { id } = req.params;
 
     // payload sanitation
-    id = validator.escape(id.trim());
+    id = id.trim();
 
     const product = await productService.getProduct(id);
 
@@ -59,9 +59,9 @@ export const createProduct = async (
     }
 
     // payload sanitation
-    name = validator.escape(name.trim());
-    if (description) description = validator.escape(description).trim();
-    category_id = validator.escape(category_id.trim());
+    name = name.trim();
+    if (description) description = description.trim();
+    category_id = category_id.trim();
 
     // price OR stock not a number?
     if (typeof price !== "number") {
@@ -108,10 +108,10 @@ export const updateProduct = async (
     }
 
     // payload & params sanitation
-    id = validator.escape(id.trim());
-    if (name) name = validator.escape(name.trim());
-    if (description) description = validator.escape(description.trim());
-    if (category_id) category_id = validator.escape(category_id.trim());
+    id = id.trim();
+    if (name) name = name.trim();
+    if (description) description = description.trim();
+    if (category_id) category_id = category_id.trim();
 
     // price OR stock not a number?
     if (typeof price !== "number") {
@@ -138,7 +138,7 @@ export const deleteProduct = async (
     let { id } = req.params;
 
     // payload sanitation
-    id = validator.escape(id.trim());
+    id = id.trim();
 
     const deletedProduct = await productService.deleteProduct(id);
 
