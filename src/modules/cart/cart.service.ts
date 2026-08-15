@@ -73,7 +73,7 @@ const addToCart = async (
 };
 
 const getCart = async (user_id: string) => {
-    return await prisma.cart.findUnique({
+    const cart = await prisma.cart.findUnique({
         where: { user_id },
         select: {
             cart_id: true,
@@ -93,6 +93,12 @@ const getCart = async (user_id: string) => {
             },
         },
     });
+
+    if (!cart) {
+        throw new AppError("Cart not found", 404);
+    }
+
+    return cart;
 };
 
 const updateCartItem = async (cart_item_id: string, quantity: number) => {
