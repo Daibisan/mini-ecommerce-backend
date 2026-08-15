@@ -1,12 +1,12 @@
 import express from "express";
 import cors from "cors";
-import { errorHandler } from "./middleware/errorHandler.middleware.js";
 import { env } from "./config/env.js";
 import { auth_router } from "./modules/auth/auth.route.js";
 import { categories_router } from "./modules/categories/categories.route.js";
 import helmet from "helmet";
 import { products_router } from "./modules/products/products.route.js";
 import { cart_router } from "./modules/cart/cart.route.js";
+import { globalErrorHandler } from "./middleware/globalErrorHandler.middleware.js";
 
 const app = express();
 
@@ -37,6 +37,6 @@ app.use("/api/products", products_router);
 app.use("/api/cart", cart_router);
 
 // error handler
-app.use(errorHandler);
+app.use(globalErrorHandler);
 
 export default app;
