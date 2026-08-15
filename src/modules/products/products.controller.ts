@@ -114,10 +114,10 @@ export const updateProduct = async (
     if (category_id) category_id = category_id.trim();
 
     // price OR stock not a number?
-    if (typeof price !== "number") {
+    if (price !== undefined && typeof price !== "number") {
         throw new AppError("Product's price should be a number", 400);
     }
-    if (typeof stock !== "number") {
+    if (stock !== undefined && typeof stock !== "number") {
         throw new AppError("Product's stock should be a number", 400);
     }
 
