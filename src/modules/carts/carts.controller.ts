@@ -5,7 +5,7 @@ import {
     AddToCartRequest,
     UpdateCartRequest,
 } from "../../types/cart.interface.js";
-import { cartService } from "./cart.service.js";
+import { cartService } from "./carts.service.js";
 import { User } from "../../types/auth.interface.js";
 
 export const addToCart = async (
