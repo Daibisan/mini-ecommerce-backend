@@ -4,7 +4,7 @@ import { ApiResponse, IdParams } from "../../types/api.interface.js";
 import {
     AddToCartRequest,
     UpdateCartRequest,
-} from "../../types/cart.interface.js";
+} from "../../types/carts.interface.js";
 import { cartService } from "./carts.service.js";
 import { User } from "../../types/auth.interface.js";
 

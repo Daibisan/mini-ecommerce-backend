@@ -1,6 +1,5 @@
 import express from "express";
 import requireAuth from "../../middleware/requireAuth.middleware.js";
-import authorize from "../../middleware/authorize.middleware.js";
 import { addToCart, clearCart, getCart, removeCartItem, updateQuantity } from "./carts.controller.js";
 
 const router = express.Router();
