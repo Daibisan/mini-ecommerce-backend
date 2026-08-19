@@ -8,6 +8,7 @@ import { products_router } from "./modules/products/products.route.js";
 import { cart_router } from "./modules/carts/carts.route.js";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.middleware.js";
 import { order_router } from "./modules/orders/orders.route.js";
+import { catchAll } from "./middleware/catchAll.middleware.js";
 
 const app = express();
 
@@ -37,6 +38,8 @@ app.use("/api/categories", categories_router);
 app.use("/api/products", products_router);
 app.use("/api/cart", cart_router);
 app.use("/api/orders", order_router);
+
+app.use(catchAll);
 
 // error handler
 app.use(globalErrorHandler);
