@@ -1,4 +1,3 @@
-import { Decimal } from "../../generated/prisma/internal/prismaNamespace.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
 
@@ -102,7 +101,41 @@ const getOrders = async (user_id: string) => {
     });
 };
 
+const getOrderDetail = async (order_id: string) => {
+    const order = await prisma.order.findUnique({
+        where: { order_id },
+        select: {
+            order_id: true,
+            total_price: true,
+            status: true,
+            shipping_address: true,
+            tracking_number: true,
+            created_at: true,
+            order_items: {
+                select: {
+                    order_item_id: true,
+                    product_id: true,
+                    quantity: true,
+                    price: true,
+                    product: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    if (!order) {
+        throw new AppError("Order not found", 404);
+    }
+
+    return order;
+};
+
 export const orderService = {
     createOrder,
     getOrders,
+    getOrderDetail
 };

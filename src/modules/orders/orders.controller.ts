@@ -25,7 +25,10 @@ export const createOrder = async (
     shipping_address = shipping_address.trim();
 
     const { user_id } = req.user as User;
-    const createdOrder = await orderService.createOrder(shipping_address, user_id);
+    const createdOrder = await orderService.createOrder(
+        shipping_address,
+        user_id,
+    );
 
     res.status(201).json({
         success: true,
@@ -41,5 +44,32 @@ export const getOrders = async (req: Request, res: Response<ApiResponse>) => {
     res.status(200).json({
         success: true,
         data: orders,
+    });
+};
+
+export const getOrderDetail = async (
+    req: Request<IdParams>,
+    res: Response<ApiResponse>,
+) => {
+    let { id: order_id } = req.params;
+
+    // empty check
+    if (!order_id) {
+        throw new AppError("Params must be filled", 400);
+    }
+
+    // type check
+    if (typeof order_id !== "string") {
+        throw new AppError("Parameter Id should be a string", 400);
+    }
+
+    // sanitation
+    order_id = order_id.trim();
+
+    const order = await orderService.getOrderDetail(order_id);
+
+    res.status(200).json({
+        success: true,
+        data: order,
     });
 };
