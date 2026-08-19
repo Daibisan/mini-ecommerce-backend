@@ -5,13 +5,16 @@
     "main": "index.js",
     "scripts": {
         "dev": "tsx watch src/server.ts",
+        "dev:test": "dotenv -e .env.test -- tsx watch src/server.ts",
         "start": "node dist/server.js",
         "build": "tsc",
 
         "test:prepare": "dotenv -e .env.test -- npx prisma db push --accept-data-loss",
         "test": "dotenv -e .env.test -- vitest run --no-file-parallelism",    
         "test:watch": "dotenv -e .env.test -- vitest",
+        "test:reset": "dotenv -e .env.test -- prisma migrate reset --force",
         "test:studio": "dotenv -e .env.test -- npx prisma studio",
+        "test:seed": "dotenv -e .env.test -- prisma db seed",
 
         "docker:up": "docker-compose up -d",
         "docker:down": "docker-compose down",
@@ -19,7 +22,7 @@
         "docker:build-up": "docker-compose up -d --build",
 
         "db:migrate": "prisma migrate dev",
-        "db:reset": "prisma migrate reset",
+        "db:reset": "prisma migrate reset --force",
         "db:delete": "prisma db push --force-reset",
         "db:studio": "prisma studio",
         "db:seed": "prisma db seed",
