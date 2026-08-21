@@ -1,4 +1,6 @@
+import { OrderStatus } from "../../generated/prisma/enums.js";
 import { prisma } from "../../lib/prisma.js";
+import { order_status } from "../../types/orders.interface.js";
 import AppError from "../../utils/appError.util.js";
 
 const createOrder = async (shipping_address: string, user_id: string) => {
@@ -134,8 +136,36 @@ const getOrderDetail = async (order_id: string) => {
     return order;
 };
 
+const updateOrderStatus = async (
+    order_id: string,
+    status: OrderStatus,
+    tracking_number?: string,
+) => {
+    // Check order existance
+    const order = await prisma.order.findUnique({
+        where: { order_id },
+    });
+
+    if (!order) {
+        throw new AppError("Order not found", 404);
+    }
+
+    const updatedOrder = await prisma.order.update({
+        where: { order_id },
+        data: { status, tracking_number },
+        select: {
+            order_id: true,
+            status: true,
+            tracking_number: true,
+        },
+    });
+
+    return updatedOrder;
+};
+
 export const orderService = {
     createOrder,
     getOrders,
-    getOrderDetail
+    getOrderDetail,
+    updateOrderStatus,
 };

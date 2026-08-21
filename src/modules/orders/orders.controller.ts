@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
 import { ApiResponse, IdParams } from "../../types/api.interface.js";
-import { createOrderRequest } from "../../types/orders.interface.js";
+import {
+    createOrderRequest,
+    updateOrderStatusRequest,
+} from "../../types/orders.interface.js";
 import { orderService } from "./orders.service.js";
 import { User } from "../../types/auth.interface.js";
+import { OrderStatus } from "../../generated/prisma/enums.js";
 
 export const createOrder = async (
     req: Request<{}, {}, createOrderRequest>,
@@ -71,5 +75,48 @@ export const getOrderDetail = async (
     res.status(200).json({
         success: true,
         data: order,
+    });
+};
+
+export const updateOrderStatus = async (
+    req: Request<IdParams, {}, updateOrderStatusRequest>,
+    res: Response<ApiResponse>,
+) => {
+    let { id: order_id } = req.params;
+    let { status, tracking_number } = req.body;
+
+    // empty check
+    if (!order_id) {
+        throw new AppError("Params must be filled", 400);
+    }
+    if (!status) {
+        throw new AppError("Payload must be filled", 400);
+    }
+
+    // type check
+    if (typeof order_id !== "string") {
+        throw new AppError("Parameter Id should be a string", 400);
+    }
+    if (typeof status !== "string") {
+        throw new AppError("Status should be a string", 400);
+    }
+    if (tracking_number && typeof tracking_number !== "string") {
+        throw new AppError("Tracking number should be a string", 400);
+    }
+
+    // check invalid status
+    if (!Object.values(OrderStatus).includes(status)) {
+        throw new AppError("Invalid status value", 400);
+    }
+
+    // sanitation
+    order_id = order_id.trim();
+    if (tracking_number) tracking_number = tracking_number.trim();
+
+    const updatedOrder = await orderService.updateOrderStatus(order_id, status, tracking_number);
+
+    res.status(200).json({
+        success: true,
+        data: updatedOrder,
     });
 };
