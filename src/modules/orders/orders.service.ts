@@ -1,6 +1,5 @@
 import { OrderStatus } from "../../generated/prisma/enums.js";
 import { prisma } from "../../lib/prisma.js";
-import { order_status } from "../../types/orders.interface.js";
 import AppError from "../../utils/appError.util.js";
 
 const createOrder = async (shipping_address: string, user_id: string) => {
@@ -67,7 +66,7 @@ const createOrder = async (shipping_address: string, user_id: string) => {
         });
 
         // 2. decrease each product stock
-        cart.items.forEach(async (item) => {
+        for (const item of cart.items) {
             await tx.product.update({
                 where: {
                     product_id: item.product_id,
@@ -76,7 +75,7 @@ const createOrder = async (shipping_address: string, user_id: string) => {
                     stock: { decrement: item.quantity },
                 },
             });
-        });
+        }
 
         // 3. Clear cart
         await tx.cartItem.deleteMany({
