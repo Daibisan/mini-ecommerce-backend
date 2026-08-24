@@ -4,14 +4,14 @@ import { createOrder, getOrderDetail, getOrders, midtransWebhook, updateOrderSta
 
 const router = express.Router();
 
+// webhook for midtrans payment gateway
+router.post("/webhook", midtransWebhook);
+
 router.use(requireAuth);
 
 router.post("/", createOrder);
 router.get("/", getOrders);
 router.get("/:id", getOrderDetail);
 router.patch("/:id/status", updateOrderStatus);
-
-// webhook for midtrans payment gateway
-router.post("/webhook", midtransWebhook);
 
 export const order_router = router;
