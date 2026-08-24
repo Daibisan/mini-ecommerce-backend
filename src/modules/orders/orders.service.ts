@@ -208,10 +208,9 @@ export const handleWebhook = async (payload: MidtransWebhookPayload) => {
     // 2. Update status
     let newStatus: OrderStatus = "PENDING";
 
-    if (
-        transaction_status === "capture" ||
-        transaction_status === "settlement"
-    ) {
+    if (transaction_status === "settlement") {
+        newStatus = "PAID";
+    } else if (transaction_status === "capture") {
         if (fraud_status === "accept") {
             newStatus = "PAID";
         }
@@ -226,7 +225,8 @@ export const handleWebhook = async (payload: MidtransWebhookPayload) => {
             data: { status: newStatus },
         });
 
-        if (updatedOrder.count === 0) throw new AppError("Order not found", 404);
+        if (updatedOrder.count === 0)
+            throw new AppError("Order not found", 404);
     }
 
     return true;
