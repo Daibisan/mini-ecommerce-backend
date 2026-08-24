@@ -5,9 +5,10 @@ import {
     createOrderRequest,
     updateOrderStatusRequest,
 } from "../../types/orders.interface.js";
-import { orderService } from "./orders.service.js";
+import { ordersService } from "./orders.service.js";
 import { User } from "../../types/auth.interface.js";
 import { OrderStatus } from "../../generated/prisma/enums.js";
+import { MidtransWebhookPayload } from "../../types/midtrans.interface.js";
 
 export const createOrder = async (
     req: Request<{}, {}, createOrderRequest>,
@@ -29,7 +30,7 @@ export const createOrder = async (
     shipping_address = shipping_address.trim();
 
     const { user_id } = req.user as User;
-    const createdOrder = await orderService.createOrder(
+    const createdOrder = await ordersService.createOrder(
         shipping_address,
         user_id,
     );
@@ -43,7 +44,7 @@ export const createOrder = async (
 
 export const getOrders = async (req: Request, res: Response<ApiResponse>) => {
     const { user_id } = req.user as User;
-    const orders = await orderService.getOrders(user_id);
+    const orders = await ordersService.getOrders(user_id);
 
     res.status(200).json({
         success: true,
@@ -70,7 +71,7 @@ export const getOrderDetail = async (
     // sanitation
     order_id = order_id.trim();
 
-    const order = await orderService.getOrderDetail(order_id);
+    const order = await ordersService.getOrderDetail(order_id);
 
     res.status(200).json({
         success: true,
@@ -113,10 +114,41 @@ export const updateOrderStatus = async (
     order_id = order_id.trim();
     if (tracking_number) tracking_number = tracking_number.trim();
 
-    const updatedOrder = await orderService.updateOrderStatus(order_id, status, tracking_number);
+    const updatedOrder = await ordersService.updateOrderStatus(
+        order_id,
+        status,
+        tracking_number,
+    );
 
     res.status(200).json({
         success: true,
         data: updatedOrder,
+    });
+};
+
+export const midtransWebhook = async (req: Request<{}, {}, MidtransWebhookPayload>, res: Response) => {
+    const {
+        order_id,
+        status_code,
+        gross_amount,
+        signature_key,
+        transaction_status,
+    } = req.body;
+
+    if (
+        !order_id ||
+        !status_code ||
+        !gross_amount ||
+        !signature_key ||
+        !transaction_status
+    ) {
+        throw new AppError("Missing payload", 400);
+    }
+
+    await ordersService.handleWebhook(req.body);
+
+    res.status(200).json({
+        success: true,
+        message: "Webhook processed",
     });
 };

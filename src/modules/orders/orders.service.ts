@@ -1,6 +1,9 @@
+import crypto from "crypto";
 import { OrderStatus } from "../../generated/prisma/enums.js";
+import { snap } from "../../lib/midtrans.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
+import { MidtransWebhookPayload } from "../../types/midtrans.interface.js";
 
 const createOrder = async (shipping_address: string, user_id: string) => {
     const cart = await prisma.cart.findUnique({
@@ -87,7 +90,25 @@ const createOrder = async (shipping_address: string, user_id: string) => {
         return order;
     });
 
-    return createdOrder;
+    // midtrans payment gateway
+    const parameter = {
+        transaction_details: {
+            order_id: createdOrder.order_id,
+            gross_amount: createdOrder.total_price,
+        },
+    };
+
+    const midtransTransaction = await snap.createTransaction(parameter);
+
+    const finalOrder = await prisma.order.update({
+        where: { order_id: createdOrder.order_id },
+        data: {
+            payment_token: midtransTransaction.token,
+            payment_url: midtransTransaction.redirect_url,
+        },
+    });
+
+    return finalOrder;
 };
 
 const getOrders = async (user_id: string) => {
@@ -162,9 +183,59 @@ const updateOrderStatus = async (
     return updatedOrder;
 };
 
-export const orderService = {
+export const handleWebhook = async (payload: MidtransWebhookPayload) => {
+    const {
+        order_id,
+        status_code,
+        gross_amount,
+        signature_key,
+        transaction_status,
+        fraud_status,
+    } = payload;
+
+    // 1. Signature Key Verification
+    const serverKey = process.env.MIDTRANS_SERVER_KEY as string;
+    const hashData = `${order_id}${status_code}${gross_amount}${serverKey}`;
+    const expectedSignature = crypto
+        .createHash("sha512")
+        .update(hashData)
+        .digest("hex");
+
+    if (expectedSignature !== signature_key) {
+        throw new Error("Invalid signature key! Invalid Webhook.");
+    }
+
+    // 2. Update status
+    let newStatus: OrderStatus = "PENDING";
+
+    if (
+        transaction_status === "capture" ||
+        transaction_status === "settlement"
+    ) {
+        if (fraud_status === "accept") {
+            newStatus = "PAID";
+        }
+    } else if (["cancel", "deny", "expire"].includes(transaction_status)) {
+        newStatus = "CANCELLED";
+    }
+
+    // 3. Update database
+    if (newStatus !== "PENDING") {
+        const updatedOrder = await prisma.order.updateMany({
+            where: { order_id },
+            data: { status: newStatus },
+        });
+
+        if (updatedOrder.count === 0) throw new AppError("Order not found", 404);
+    }
+
+    return true;
+};
+
+export const ordersService = {
     createOrder,
     getOrders,
     getOrderDetail,
     updateOrderStatus,
+    handleWebhook,
 };

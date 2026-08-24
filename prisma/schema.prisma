@@ -109,6 +109,8 @@ model Order {
     status           OrderStatus @default(PENDING)
     shipping_address String      @db.Text
     tracking_number  String?
+    payment_token String?
+    payment_url   String?
     created_at       DateTime    @default(now())
     updated_at       DateTime    @updatedAt
 
