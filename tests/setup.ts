@@ -25,10 +25,13 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    
     await prisma.product.deleteMany();
     await prisma.category.deleteMany();
 
     await prisma.user.deleteMany({
-        where: { user_id: { not: ADMIN_ID } },
+        where: { role: { not: "ADMIN" } },
     });
 });
