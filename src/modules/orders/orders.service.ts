@@ -118,6 +118,8 @@ const getOrders = async (user_id: string) => {
             order_id: true,
             total_price: true,
             status: true,
+            payment_url: true,
+            payment_token: true,
             created_at: true,
         },
     });
@@ -132,6 +134,8 @@ const getOrderDetail = async (order_id: string) => {
             status: true,
             shipping_address: true,
             tracking_number: true,
+            payment_url: true,
+            payment_token: true,
             created_at: true,
             order_items: {
                 select: {
