@@ -1,3 +1,4 @@
+import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
 
@@ -130,18 +131,19 @@ const updateCartItem = async (id: string, quantity: number) => {
 };
 
 const removeCartItem = async (id: string) => {
-    // Check cartItem existance
-    const cartItem = await prisma.cartItem.findUnique({
-        where: { cart_item_id: id },
-    });
-
-    if (!cartItem) {
-        throw new AppError("CartItem not found", 404);
-    }
-
-    await prisma.cartItem.delete({
-        where: { cart_item_id: id },
-    });
+    try {
+        await prisma.cartItem.delete({
+            where: { cart_item_id: id },
+        });
+    } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                // cartItem not found
+                if (error.code === "P2025") {
+                    throw new AppError("Cart Item not found", 404);
+                }
+            }
+            throw error;
+        }
 };
 
 const clearCart = async (user_id: string) => {
