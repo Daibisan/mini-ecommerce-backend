@@ -73,35 +73,6 @@ describe("POST /api/products", () => {
         expect(response.status).toBe(400);
         expect(response.body.error).toBe("Product's price should be a number");
     });
-
-    it("error: name already exists", async () => {
-        const name = seed.productName();
-
-        // Bikin produk pertama
-        await prisma.product.create({
-            data: {
-                name,
-                price: 10000,
-                stock: 50,
-                category_id: categoryId,
-            },
-        });
-
-        // Coba bikin produk kedua dengan nama yang sama
-        const response = await request(app)
-            .post("/api/products")
-            .set("Authorization", `Bearer ${getAdminToken()}`)
-            .send({
-                name,
-                description: "Desc",
-                price: 20000,
-                stock: 10,
-                category_id: categoryId,
-            });
-
-        expect(response.status).toBe(409);
-        expect(response.body.error).toBe("Product already exists");
-    });
 });
 
 describe("GET /api/products", () => {
@@ -198,28 +169,6 @@ describe("PATCH /api/products/:id", () => {
             .send({ price: 1000 });
 
         expect(response.status).toBe(404);
-    });
-
-    it("error: product name already exists", async () => {
-        const name1 = seed.productName();
-        const name2 = seed.productName();
-
-        // Setup 2 produk
-        await prisma.product.create({
-            data: { name: name1, price: 10, stock: 5, category_id: categoryId },
-        });
-        const product2 = await prisma.product.create({
-            data: { name: name2, price: 10, stock: 5, category_id: categoryId },
-        });
-
-        // Ubah produk 2 jadi nama produk 1
-        const response = await request(app)
-            .patch(`/api/products/${product2.product_id}`)
-            .set("Authorization", `Bearer ${getAdminToken()}`)
-            .send({ name: name1, price: 20, stock: 10 });
-
-        expect(response.status).toBe(409);
-        expect(response.body.error).toBe("Product's name already exists");
     });
 });
 

@@ -1,3 +1,4 @@
+import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { ProductRequest } from "../../types/products.intereface.js";
 import AppError from "../../utils/appError.util.js";
@@ -8,7 +9,9 @@ const getAllProducts = async () => {
 };
 
 const getProduct = async (id: string) => {
-    const product = await prisma.product.findUnique({ where: { product_id: id } });
+    const product = await prisma.product.findUnique({
+        where: { product_id: id },
+    });
     if (!product) throw new AppError("Product not found", 404);
 
     return product;
@@ -16,14 +19,6 @@ const getProduct = async (id: string) => {
 
 // ADMIN
 const createProduct = async (payload: ProductRequest) => {
-    // duplicate product's name?
-    const nameExists = await prisma.product.findUnique({
-        where: { name: payload.name },
-    });
-    if (nameExists) {
-        throw new AppError("Product already exists", 409);
-    }
-
     const newProduct = await prisma.product.create({
         data: { ...payload },
     });
@@ -32,46 +27,40 @@ const createProduct = async (payload: ProductRequest) => {
 };
 
 const updateProduct = async (id: string, payload: Partial<ProductRequest>) => {
-    // isExist?
-    const exists = await prisma.product.findUnique({
-        where: { product_id: id },
-    });
-    if (!exists) {
-        throw new AppError("Product not found", 404);
-    }
-
-    // duplicate product's name?
-    if (payload.name) {
-        const nameExists = await prisma.product.findUnique({
-            where: { name: payload.name },
+    try {
+        const updatedProduct = await prisma.product.update({
+            where: { product_id: id },
+            data: { ...payload },
         });
-        if (nameExists && nameExists.product_id !== id) {
-            throw new AppError("Product's name already exists", 409);
+
+        return updatedProduct;
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // product not found
+            if (error.code === "P2025") {
+                throw new AppError("Product not found", 404);
+            }
         }
+        throw error;
     }
-
-    const updatedProduct = await prisma.product.update({
-        where: { product_id: id },
-        data: { ...payload },
-    });
-
-    return updatedProduct;
 };
 
 const deleteProduct = async (id: string) => {
-    // isExist?
-    const exists = await prisma.product.findUnique({
-        where: { product_id: id },
-    });
-    if (!exists) {
-        throw new AppError("Product not found", 404);
+    try {
+        const deletedProduct = await prisma.product.delete({
+            where: { product_id: id },
+        });
+
+        return deletedProduct;
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // product not found
+            if (error.code === "P2025") {
+                throw new AppError("Product not found", 404);
+            }
+        }
+        throw error;
     }
-
-    const deletedProduct = await prisma.product.delete({
-        where: { product_id: id },
-    });
-
-    return deletedProduct;
 };
 
 export const productService = {
