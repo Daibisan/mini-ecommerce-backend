@@ -1,3 +1,4 @@
+import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
 
@@ -7,7 +8,9 @@ const getAllCategories = async () => {
 };
 
 const getCategory = async (id: string) => {
-    const category = await prisma.category.findUnique({ where: { category_id: id } });
+    const category = await prisma.category.findUnique({
+        where: { category_id: id },
+    });
     if (!category) {
         throw new AppError("Category not found", 404);
     }
@@ -16,67 +19,66 @@ const getCategory = async (id: string) => {
 
 // ADMIN
 const createCategory = async (name: string) => {
-    // duplicate category's name (case-sensitive)?
-    const nameExists = await prisma.category.findFirst({
-        where: {
-            name: {
-                equals: name,
-                mode: "insensitive",
-            },
-        },
-    });
-    if (nameExists) throw new AppError("Category already exists", 409);
+    const normalizedName = name.toLowerCase().trim();
 
-    const newCategory = await prisma.category.create({
-        data: { name },
-    });
+    try {
+        const newCategory = await prisma.category.create({
+            data: { name: normalizedName },
+        });
 
-    return newCategory;
+        return newCategory;
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // duplicate category
+            if (error.code === "P2002") {
+                throw new AppError("Category already exists", 409);
+            }
+        }
+        throw error;
+    }
 };
 
 const updateCategory = async (id: string, name: string) => {
-    // isExist?
-    const exists = await prisma.category.findUnique({
-        where: { category_id: id },
-    });
-    if (!exists) {
-        throw new AppError("Category not found", 404);
+    const normalizedName = name.toLowerCase().trim();
+
+    try {
+        const updatedCategory = await prisma.category.update({
+            where: { category_id: id },
+            data: { name: normalizedName },
+        });
+
+        return updatedCategory;
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // duplicate category
+            if (error.code === "P2002") {
+                throw new AppError("Category's name already exists", 409);
+            }
+            // category not found
+            if (error.code === "P2025") {
+                throw new AppError("Category not found", 404);
+            }
+        }
+        throw error;
     }
-
-    // duplicate category's name?
-    const nameExists = await prisma.category.findFirst({
-        where: {
-            name: {
-                equals: name,
-                mode: "insensitive",
-            },
-        },
-    });
-    if (nameExists && nameExists.category_id !== id)
-        throw new AppError("Category's name already exists", 409);
-
-    const updatedCategory = await prisma.category.update({
-        where: { category_id: id },
-        data: { name },
-    });
-
-    return updatedCategory;
 };
 
 const deleteCategory = async (id: string) => {
-    // isExist?
-    const exists = await prisma.category.findUnique({
-        where: { category_id: id },
-    });
-    if (!exists) {
-        throw new AppError("Category not found", 404);
+    try {
+        const deletedCategory = await prisma.category.delete({
+            where: { category_id: id },
+        });
+
+        return deletedCategory;
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // category not found
+            if (error.code === "P2025") {
+                throw new AppError("Category not found", 404);
+            }
+        }
+        throw error;
     }
-
-    const deletedCategory = await prisma.category.delete({
-        where: { category_id: id },
-    });
-
-    return deletedCategory;
 };
 
 export const categoryService = {

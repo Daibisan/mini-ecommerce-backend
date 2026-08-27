@@ -12,7 +12,7 @@ export const getRandomText = () => {
 export const seed = {
     username: () => `user_${getRandomText()}`,
     email: () => `${getRandomText()}@gmail.com`,
-    categoryName: () => `Category-${getRandomText()}`,
+    categoryName: () => `Category-${getRandomText()}`.toLowerCase(),
     productName: () => `Product-${getRandomText()}`,
     // Password untuk Register (lolos validasi regex biasanya)
     password: "12345678Password.!", 

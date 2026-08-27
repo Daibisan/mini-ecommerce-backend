@@ -14,7 +14,7 @@ describe("POST /api/categories", () => {
             .send({ name });
 
         expect(response.status).toBe(201);
-        expect(response.body.data.name).toBe(name);
+        expect(response.body.data.name).toBe(name.toLowerCase());
     });
 
     it("error: empty payload", async () => {
