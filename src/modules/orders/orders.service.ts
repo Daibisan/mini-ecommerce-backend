@@ -182,7 +182,7 @@ const updateOrderStatus = async (
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             // order not found
             if (error.code === "P2025") {
-                throw new AppError("Category not found", 404);
+                throw new AppError("Order not found", 404);
             }
         }
         throw error;
