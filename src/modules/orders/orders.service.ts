@@ -4,6 +4,7 @@ import { snap } from "../../lib/midtrans.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
 import { MidtransWebhookPayload } from "../../types/midtrans.interface.js";
+import { Prisma } from "../../generated/prisma/client.js";
 
 const createOrder = async (shipping_address: string, user_id: string) => {
     const cart = await prisma.cart.findUnique({
@@ -165,26 +166,27 @@ const updateOrderStatus = async (
     status: OrderStatus,
     tracking_number?: string,
 ) => {
-    // Check order existance
-    const order = await prisma.order.findUnique({
-        where: { order_id: id },
-    });
+    try {
+        const updatedOrder = await prisma.order.update({
+            where: { order_id: id },
+            data: { status, tracking_number },
+            select: {
+                order_id: true,
+                status: true,
+                tracking_number: true,
+            },
+        });
 
-    if (!order) {
-        throw new AppError("Order not found", 404);
+        return updatedOrder;
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // order not found
+            if (error.code === "P2025") {
+                throw new AppError("Category not found", 404);
+            }
+        }
+        throw error;
     }
-
-    const updatedOrder = await prisma.order.update({
-        where: { order_id: id },
-        data: { status, tracking_number },
-        select: {
-            order_id: true,
-            status: true,
-            tracking_number: true,
-        },
-    });
-
-    return updatedOrder;
 };
 
 export const handleWebhook = async (payload: MidtransWebhookPayload) => {
