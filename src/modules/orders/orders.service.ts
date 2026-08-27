@@ -125,9 +125,9 @@ const getOrders = async (user_id: string) => {
     });
 };
 
-const getOrderDetail = async (order_id: string) => {
+const getOrderDetail = async (id: string) => {
     const order = await prisma.order.findUnique({
-        where: { order_id },
+        where: { order_id: id },
         select: {
             order_id: true,
             total_price: true,
@@ -161,13 +161,13 @@ const getOrderDetail = async (order_id: string) => {
 };
 
 const updateOrderStatus = async (
-    order_id: string,
+    id: string,
     status: OrderStatus,
     tracking_number?: string,
 ) => {
     // Check order existance
     const order = await prisma.order.findUnique({
-        where: { order_id },
+        where: { order_id: id },
     });
 
     if (!order) {
@@ -175,7 +175,7 @@ const updateOrderStatus = async (
     }
 
     const updatedOrder = await prisma.order.update({
-        where: { order_id },
+        where: { order_id: id },
         data: { status, tracking_number },
         select: {
             order_id: true,

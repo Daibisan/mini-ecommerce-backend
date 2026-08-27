@@ -58,16 +58,16 @@ export const updateQuantity = async (
     req: Request<IdParams, {}, UpdateCartRequest>,
     res: Response<ApiResponse>,
 ) => {
-    let { id: cart_item_id } = req.params;
+    let { id } = req.params;
     const { quantity } = req.body;
 
     // empty check
-    if (!cart_item_id || !quantity) {
+    if (!id || !quantity) {
         throw new AppError("Payload & Params must be filled", 400);
     }
 
     // type check
-    if (typeof cart_item_id !== "string") {
+    if (typeof id !== "string") {
         throw new AppError("Parameter Id should be a string", 400);
     }
     if (!Number.isInteger(quantity)) {
@@ -75,12 +75,9 @@ export const updateQuantity = async (
     }
 
     // sanitation
-    cart_item_id = cart_item_id.trim();
+    id = id.trim();
 
-    const updatedCartItem = await cartService.updateCartItem(
-        cart_item_id,
-        quantity,
-    );
+    const updatedCartItem = await cartService.updateCartItem(id, quantity);
 
     res.status(200).json({
         success: true,
@@ -93,22 +90,22 @@ export const removeCartItem = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id: cart_item_id } = req.params;
+    let { id } = req.params;
 
     // empty check
-    if (!cart_item_id) {
+    if (!id) {
         throw new AppError("Params must be filled", 400);
     }
 
     // type check
-    if (typeof cart_item_id !== "string") {
+    if (typeof id !== "string") {
         throw new AppError("Parameter Id should be a string", 400);
     }
 
     // sanitation
-    cart_item_id = cart_item_id.trim();
+    id = id.trim();
 
-    await cartService.removeCartItem(cart_item_id);
+    await cartService.removeCartItem(id);
 
     res.status(200).json({
         success: true,

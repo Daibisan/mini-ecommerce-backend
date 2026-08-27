@@ -1,14 +1,10 @@
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
 
-const addToCart = async (
-    product_id: string,
-    quantity: number,
-    user_id: string,
-) => {
+const addToCart = async (id: string, quantity: number, user_id: string) => {
     // Check product existance
     const product = await prisma.product.findUnique({
-        where: { product_id },
+        where: { product_id: id },
     });
     if (!product) {
         throw new AppError("Product not found", 404);
@@ -30,7 +26,7 @@ const addToCart = async (
     const cart_id = cart.cart_id;
 
     let cartItem = await prisma.cartItem.findFirst({
-        where: { cart_id, product_id },
+        where: { cart_id, product_id: id },
     });
 
     if (cartItem) {
@@ -61,7 +57,7 @@ const addToCart = async (
     const addedProduct = await prisma.cartItem.create({
         data: {
             cart_id,
-            product_id,
+            product_id: id,
             quantity,
         },
         omit: {
@@ -101,10 +97,10 @@ const getCart = async (user_id: string) => {
     return cart;
 };
 
-const updateCartItem = async (cart_item_id: string, quantity: number) => {
+const updateCartItem = async (id: string, quantity: number) => {
     // Check cartItem existance
     const cartItem = await prisma.cartItem.findFirst({
-        where: { cart_item_id },
+        where: { cart_item_id: id },
         select: {
             product: {
                 select: {
@@ -124,7 +120,7 @@ const updateCartItem = async (cart_item_id: string, quantity: number) => {
     }
 
     return await prisma.cartItem.update({
-        where: { cart_item_id },
+        where: { cart_item_id: id },
         data: { quantity },
         select: {
             cart_item_id: true,
@@ -133,10 +129,10 @@ const updateCartItem = async (cart_item_id: string, quantity: number) => {
     });
 };
 
-const removeCartItem = async (cart_item_id: string) => {
+const removeCartItem = async (id: string) => {
     // Check cartItem existance
     const cartItem = await prisma.cartItem.findUnique({
-        where: { cart_item_id },
+        where: { cart_item_id: id },
     });
 
     if (!cartItem) {
@@ -144,7 +140,7 @@ const removeCartItem = async (cart_item_id: string) => {
     }
 
     await prisma.cartItem.delete({
-        where: { cart_item_id },
+        where: { cart_item_id: id },
     });
 };
 

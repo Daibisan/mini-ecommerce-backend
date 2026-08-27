@@ -56,22 +56,22 @@ export const getOrderDetail = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id: order_id } = req.params;
+    let { id } = req.params;
 
     // empty check
-    if (!order_id) {
+    if (!id) {
         throw new AppError("Params must be filled", 400);
     }
 
     // type check
-    if (typeof order_id !== "string") {
+    if (typeof id !== "string") {
         throw new AppError("Parameter Id should be a string", 400);
     }
 
     // sanitation
-    order_id = order_id.trim();
+    id = id.trim();
 
-    const order = await ordersService.getOrderDetail(order_id);
+    const order = await ordersService.getOrderDetail(id);
 
     res.status(200).json({
         success: true,
@@ -83,11 +83,11 @@ export const updateOrderStatus = async (
     req: Request<IdParams, {}, updateOrderStatusRequest>,
     res: Response<ApiResponse>,
 ) => {
-    let { id: order_id } = req.params;
+    let { id } = req.params;
     let { status, tracking_number } = req.body;
 
     // empty check
-    if (!order_id) {
+    if (!id) {
         throw new AppError("Params must be filled", 400);
     }
     if (!status) {
@@ -95,7 +95,7 @@ export const updateOrderStatus = async (
     }
 
     // type check
-    if (typeof order_id !== "string") {
+    if (typeof id !== "string") {
         throw new AppError("Parameter Id should be a string", 400);
     }
     if (typeof status !== "string") {
@@ -111,11 +111,11 @@ export const updateOrderStatus = async (
     }
 
     // sanitation
-    order_id = order_id.trim();
+    id = id.trim();
     if (tracking_number) tracking_number = tracking_number.trim();
 
     const updatedOrder = await ordersService.updateOrderStatus(
-        order_id,
+        id,
         status,
         tracking_number,
     );
@@ -126,7 +126,10 @@ export const updateOrderStatus = async (
     });
 };
 
-export const midtransWebhook = async (req: Request<{}, {}, MidtransWebhookPayload>, res: Response) => {
+export const midtransWebhook = async (
+    req: Request<{}, {}, MidtransWebhookPayload>,
+    res: Response,
+) => {
     const {
         order_id,
         status_code,
