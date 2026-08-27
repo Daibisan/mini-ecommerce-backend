@@ -206,7 +206,7 @@ export const handleWebhook = async (payload: MidtransWebhookPayload) => {
         .digest("hex");
 
     if (expectedSignature !== signature_key) {
-        throw new Error("Invalid signature key! Invalid Webhook.");
+        throw new AppError("Invalid signature key! Invalid Webhook.", 400);
     }
 
     // 2. Update status
