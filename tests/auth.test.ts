@@ -70,6 +70,8 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(409);
+        console.log(response.error);
+        
     });
 
     it("error: duplicate username", async () => {
