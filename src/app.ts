@@ -9,6 +9,8 @@ import { cart_router } from "./modules/carts/carts.route.js";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.middleware.js";
 import { order_router } from "./modules/orders/orders.route.js";
 import { catchAll } from "./middleware/catchAll.middleware.js";
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from "./config/swagger.js";
 
 const app = express();
 
@@ -23,7 +25,11 @@ if (env.NODE_ENV !== "production") {
         console.log("User-Agent:", req.headers["user-agent"]);
         next();
     });
+    
+    // swagger api docs
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
+
 
 // health
 app.get("/health", (req, res) => {

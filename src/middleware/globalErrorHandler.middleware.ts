@@ -19,7 +19,7 @@ export const globalErrorHandler: ErrorRequestHandler<{}, ApiResponse> = (
 
     if (err instanceof SyntaxError && "status" in err && err.status === 400) {
         statusCode = 400;
-        message = "Bad Request"
+        message = "Bad Request";
     }
 
     if (env.NODE_ENV !== "production" && message === "Internal Server Error") {
