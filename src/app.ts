@@ -18,18 +18,17 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// dev logger
 if (env.NODE_ENV !== "production") {
+    // dev logger
     app.use((req, res, next) => {
         console.log(req.method, req.path);
         console.log("User-Agent:", req.headers["user-agent"]);
         next();
     });
-    
+
     // swagger api docs
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
-
 
 // health
 app.get("/health", (req, res) => {
@@ -45,7 +44,7 @@ app.use("/api/products", products_router);
 app.use("/api/cart", cart_router);
 app.use("/api/orders", order_router);
 
-app.use(catchAll);
+app.use(catchAll); // endpoint not found handler
 
 // error handler
 app.use(globalErrorHandler);
