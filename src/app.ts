@@ -10,7 +10,8 @@ import { globalErrorHandler } from "./middleware/globalErrorHandler.middleware.j
 import { order_router } from "./modules/orders/orders.route.js";
 import { catchAll } from "./middleware/catchAll.middleware.js";
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from "./config/swagger.js";
+import YAML from "yamljs";
+import path from "path";
 
 const app = express();
 
@@ -27,7 +28,8 @@ if (env.NODE_ENV !== "production") {
     });
 
     // swagger api docs
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    const swaggerDocument = YAML.load(path.join(process.cwd(), 'docs/openapi.yml'));
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 
 // health
