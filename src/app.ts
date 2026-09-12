@@ -5,7 +5,7 @@ import { auth_router } from "./modules/auth/auth.route.js";
 import { categories_router } from "./modules/categories/categories.route.js";
 import helmet from "helmet";
 import { products_router } from "./modules/products/products.route.js";
-import { cart_router } from "./modules/carts/carts.route.js";
+import { cart_router } from "./modules/cart/cart.route.js";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.middleware.js";
 import { order_router } from "./modules/orders/orders.route.js";
 import { catchAll } from "./middleware/catchAll.middleware.js";
