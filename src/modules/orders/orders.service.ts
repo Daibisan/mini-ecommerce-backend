@@ -131,6 +131,7 @@ const getOrderDetail = async (id: string) => {
         where: { order_id: id },
         select: {
             order_id: true,
+            user_id: true,
             total_price: true,
             status: true,
             shipping_address: true,
