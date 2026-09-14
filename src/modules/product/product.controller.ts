@@ -3,7 +3,7 @@ import AppError from "../../utils/appError.util.js";
 import validator from "validator";
 import { ApiResponse, IdParams } from "../../types/api.interface.js";
 import { ProductRequest } from "../../types/products.intereface.js";
-import { productService } from "./products.service.js";
+import { productService } from "./product.service.js";
 
 // PUBLIC
 export const getAllProducts = async (

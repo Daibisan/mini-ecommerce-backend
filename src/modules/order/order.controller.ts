@@ -5,7 +5,7 @@ import {
     createOrderRequest,
     updateOrderStatusRequest,
 } from "../../types/orders.interface.js";
-import { ordersService } from "./orders.service.js";
+import { orderService } from "./order.service.js";
 import { User } from "../../types/auth.interface.js";
 import { OrderStatus } from "../../generated/prisma/enums.js";
 import { MidtransWebhookPayload } from "../../types/midtrans.interface.js";
@@ -30,7 +30,7 @@ export const createOrder = async (
     shipping_address = shipping_address.trim();
 
     const { user_id } = req.user as User;
-    const createdOrder = await ordersService.createOrder(
+    const createdOrder = await orderService.createOrder(
         shipping_address,
         user_id,
     );
@@ -44,7 +44,7 @@ export const createOrder = async (
 
 export const getOrders = async (req: Request, res: Response<ApiResponse>) => {
     const { user_id } = req.user as User;
-    const orders = await ordersService.getOrders(user_id);
+    const orders = await orderService.getOrders(user_id);
 
     res.status(200).json({
         success: true,
@@ -71,7 +71,7 @@ export const getOrderDetail = async (
     // sanitation
     id = id.trim();
 
-    const order = await ordersService.getOrderDetail(id);
+    const order = await orderService.getOrderDetail(id);
 
     res.status(200).json({
         success: true,
@@ -114,7 +114,7 @@ export const updateOrderStatus = async (
     id = id.trim();
     if (tracking_number) tracking_number = tracking_number.trim();
 
-    const updatedOrder = await ordersService.updateOrderStatus(
+    const updatedOrder = await orderService.updateOrderStatus(
         id,
         status,
         tracking_number,
@@ -148,7 +148,7 @@ export const midtransWebhook = async (
         throw new AppError("Missing payload", 400);
     }
 
-    await ordersService.handleWebhook(req.body);
+    await orderService.handleWebhook(req.body);
 
     res.status(200).json({
         success: true,

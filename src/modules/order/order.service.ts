@@ -239,7 +239,7 @@ export const handleWebhook = async (payload: MidtransWebhookPayload) => {
     return true;
 };
 
-export const ordersService = {
+export const orderService = {
     createOrder,
     getOrders,
     getOrderDetail,

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
 import validator from "validator";
-import { categoryService } from "./categories.service.js";
+import { categoryService } from "./category.service.js";
 import { ApiResponse, IdParams } from "../../types/api.interface.js";
 import { CategoryRequest } from "../../types/categories.intereface.js";
 

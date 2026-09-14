@@ -2,12 +2,12 @@ import express from "express";
 import cors from "cors";
 import { env } from "./config/env.js";
 import { auth_router } from "./modules/auth/auth.route.js";
-import { categories_router } from "./modules/categories/categories.route.js";
+import { category_router } from "./modules/category/category.route.js";
 import helmet from "helmet";
-import { products_router } from "./modules/products/products.route.js";
+import { product_router } from "./modules/product/product.route.js";
 import { cart_router } from "./modules/cart/cart.route.js";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.middleware.js";
-import { order_router } from "./modules/orders/orders.route.js";
+import { order_router } from "./modules/order/order.route.js";
 import { catchAll } from "./middleware/catchAll.middleware.js";
 import swaggerUi from 'swagger-ui-express';
 import YAML from "yamljs";
@@ -41,8 +41,8 @@ app.get("/health", (req, res) => {
 
 // routes
 app.use("/api/auth", auth_router);
-app.use("/api/categories", categories_router);
-app.use("/api/products", products_router);
+app.use("/api/categories", category_router);
+app.use("/api/products", product_router);
 app.use("/api/cart", cart_router);
 app.use("/api/orders", order_router);
 

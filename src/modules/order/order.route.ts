@@ -1,6 +1,6 @@
 import express from "express";
 import requireAuth from "../../middleware/requireAuth.middleware.js";
-import { createOrder, getOrderDetail, getOrders, midtransWebhook, updateOrderStatus } from "./orders.controller.js";
+import { createOrder, getOrderDetail, getOrders, midtransWebhook, updateOrderStatus } from "./order.controller.js";
 
 const router = express.Router();
 

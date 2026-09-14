@@ -1,7 +1,7 @@
 import express from "express";
 import requireAuth from "../../middleware/requireAuth.middleware.js";
 import authorize from "../../middleware/authorize.middleware.js";
-import { createProduct, deleteProduct, getAllProducts, getProduct, updateProduct } from "./products.controller.js";
+import { createProduct, deleteProduct, getAllProducts, getProduct, updateProduct } from "./product.controller.js";
 
 const router = express.Router();
 
@@ -16,4 +16,4 @@ router.post("/", createProduct);
 router.patch("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 
-export const products_router = router;
+export const product_router = router;
