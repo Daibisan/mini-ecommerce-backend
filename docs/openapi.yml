@@ -137,6 +137,86 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CartItemDetail'
+
+    OrderItemProduct:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Mechanical Keyboard"
+
+    OrderItemDetail:
+      type: object
+      properties:
+        order_item_id:
+          type: string
+          example: "oi_123"
+        product_id:
+          type: string
+          example: "prod_123"
+        quantity:
+          type: integer
+          example: 2
+        price:
+          type: integer
+          example: 750000
+        product:
+          $ref: '#/components/schemas/OrderItemProduct'
+
+    OrderSummary:
+      type: object
+      properties:
+        order_id:
+          type: string
+          example: "order_123"
+        user_id:
+          type: string
+          example: "user_123"
+        shipping_address:
+          type: string
+          example: "JL. Akasia 5"
+        total_price:
+          type: integer
+          example: 1500000
+        status:
+          type: string
+          enum:
+            - PENDING
+            - PAID
+            - SHIPPED
+            - COMPLETED
+            - CANCELLED
+          example: "PENDING"
+        payment_url:
+          type: string
+          nullable: true
+          example: "https://app.sandbox.midtrans.com/snap/v2/vtweb/..."
+        payment_token:
+          type: string
+          nullable: true
+          example: "token_123"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-09-13T12:00:00.000Z"
+
+    OrderDetail:
+      allOf:
+        - $ref: '#/components/schemas/OrderSummary'
+        - type: object
+          properties:
+            shipping_address:
+              type: string
+              example: "Jl. Sudirman No. 1, Jakarta"
+            tracking_number:
+              type: string
+              nullable: true
+              example: "RESI12345678"
+            order_items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItemDetail'
+
 paths:
   /api/auth/register:
     post:
@@ -1123,6 +1203,339 @@ paths:
               example:
                 success: false
                 error: "Cart Item not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders/webhook: 
+    post:
+      tags:
+        - Orders
+      summary: Midtrans Webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+                - order_id
+                - status_code
+                - gross_amount
+                - signature_key
+                - transaction_status
+              properties:
+                order_id:
+                  type: string
+                status_code:
+                  type: string
+                gross_amount:
+                  type: string
+                signature_key:
+                  type: string
+                transaction_status:
+                  type: string
+                fraud_status:
+                  type: string
+      responses:
+        '200':
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Webhook processed" 
+        '400':
+          description: Bad Request (Invalid Signature or Missing Payload)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Invalid signature key! Invalid Webhook."
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Order not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders: 
+    get:
+      tags:
+        - Orders
+      summary: Get user orders
+      responses:
+        '200':
+          description: Orders fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrderSummary' 
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Unauthorized"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Orders
+      summary: Create new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shipping_address 
+              properties:
+                shipping_address:
+                  type: string
+                  example: "Jl. Sudirman No. 1, Jakarta"
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Order created successfully" 
+                  data:
+                    $ref: '#/components/schemas/OrderSummary' 
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Payload is missing"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Unauthorized"
+        '404':
+          description: Cart not found / Cart is empty 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Cart not found"
+        '422':
+          description: Product out of stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Product name is out of stock"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders/{id}: 
+    get:
+      tags:
+        - Orders
+      summary: Get order detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Order ID
+          schema:
+            type: string
+            example: "order_123"
+      responses:
+        '200':
+          description: Order detail fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/OrderDetail' 
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Payload is missing"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Unauthorized"
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Order not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders/{id}/status: 
+    patch:
+      tags:
+        - Orders
+      summary: Update order status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Order ID
+          schema:
+            type: string
+            example: "order_123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status 
+              properties:
+                status:
+                  type: string
+                  enum: 
+                    - PENDING
+                    - PAID
+                    - SHIPPED
+                    - COMPLETED
+                    - CANCELLED
+                  example: "SHIPPED"
+                tracking_number:
+                  type: string
+                  nullable: true
+                  example: "RESI12345678" 
+      responses:
+        '200':
+          description: Order status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      order_id:
+                        type: string
+                        example: "order_123"
+                      status:
+                        type: string
+                        example: "SHIPPED" 
+                      tracking_number:
+                        type: string
+                        nullable: true
+                        example: "RESI12345678" 
+        '400':
+          description: Bad Request (Invalid Status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Payload is missing"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Unauthorized"
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Order not found"
         '500':
           description: Internal server error
           content:
