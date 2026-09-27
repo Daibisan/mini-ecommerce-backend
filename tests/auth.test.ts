@@ -32,7 +32,16 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
+        expect(response.body).toEqual({
+            success: false,
+            message: "Validation Error",
+            errors: expect.arrayContaining([
+                expect.objectContaining({
+                    field: "password",
+                    message: "Password not strong enough",
+                }),
+            ]),
+        });
     });
 
     it("error: not an email", async () => {
@@ -47,6 +56,31 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    field: "email",
+                }),
+            ]),
+        );
+    });
+
+    it("error: empty body / missing required fields", async () => {
+        const response = await request(app).post("/api/auth/register").send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        // Zod otomatis mendeteksi ketiga field yang hilang sekaligus
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "username" }),
+                expect.objectContaining({ field: "email" }),
+                expect.objectContaining({ field: "password" }),
+            ]),
+        );
     });
 
     it("error: duplicate email", async () => {
@@ -70,8 +104,7 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(409);
-        console.log(response.error);
-        
+        expect(response.body.success).toBe(false);
     });
 
     it("error: duplicate username", async () => {
@@ -95,6 +128,7 @@ describe("POST /api/auth/register", () => {
             .send(payload);
 
         expect(response.status).toBe(409);
+        expect(response.body.success).toBe(false);
     });
 });
 
@@ -141,6 +175,20 @@ describe("POST /api/auth/login", () => {
         expect(response.body.success).toBe(true);
     });
 
+    it("error: empty payload", async () => {
+        const response = await request(app).post("/api/auth/login").send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "identifier" }),
+                expect.objectContaining({ field: "password" }),
+            ]),
+        );
+    });
+
     it("error: identifier not found", async () => {
         const response = await request(app).post("/api/auth/login").send({
             identifier: seed.email(),
@@ -148,6 +196,7 @@ describe("POST /api/auth/login", () => {
         });
 
         expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
     });
 
     it("error: invalid password", async () => {
@@ -164,5 +213,6 @@ describe("POST /api/auth/login", () => {
         });
 
         expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
     });
 });
