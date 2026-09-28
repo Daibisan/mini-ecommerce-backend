@@ -7,7 +7,7 @@ import { productService } from "./product.service.js";
 
 // PUBLIC
 export const getAllProducts = async (
-    req: Request,
+    _req: Request,
     res: Response<ApiResponse>,
 ) => {
     const product = await productService.getAllProducts();

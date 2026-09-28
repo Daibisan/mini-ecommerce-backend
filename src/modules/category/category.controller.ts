@@ -7,7 +7,7 @@ import { CategoryRequest } from "../../types/categories.intereface.js";
 
 // PUBLIC
 export const getAllCategories = async (
-    req: Request,
+    _req: Request,
     res: Response<ApiResponse>,
 ) => {
     const categories = await categoryService.getAllCategories();
