@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
-import AppError from "../../utils/appError.util.js";
-import validator from "validator";
 import { categoryService } from "./category.service.js";
-import { ApiResponse, IdParams } from "../../types/api.interface.js";
-import { CategoryRequest } from "../../types/categories.intereface.js";
+import { ApiResponse } from "../../types/api.interface.js";
+import { IdParams } from "../../schemas/common.schema.js";
+import { CreateCategoryBody, UpdateCategoryBody } from "./category.schema.js";
 
 // PUBLIC
 export const getAllCategories = async (
@@ -22,9 +21,7 @@ export const getCategory = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    const { id } = req.params;
-
-    const category = await categoryService.getCategory(id);
+    const category = await categoryService.getCategory(req.params.id);
 
     res.status(200).json({
         success: true,
@@ -34,30 +31,10 @@ export const getCategory = async (
 
 // ADMIN
 export const createCategory = async (
-    req: Request<{}, {}, CategoryRequest>,
+    req: Request<{}, {}, CreateCategoryBody>,
     res: Response<ApiResponse>,
 ) => {
-    let { name } = req.body;
-
-    // empty payload?
-    if (!name) {
-        throw new AppError("Category's name must be filled", 400);
-    }
-
-    // name is a number?
-    if (typeof name === "number") {
-        throw new AppError("Category's name should be a string", 400);
-    }
-
-    // payload sanitation
-    name = name.trim();
-
-    // name contains number?
-    if (validator.isNumeric(name)) {
-        throw new AppError("Category name can not only number", 400);
-    }
-
-    const newCategory = await categoryService.createCategory(name);
+    const newCategory = await categoryService.createCategory(req.body.name);
 
     res.status(201).json({
         success: true,
@@ -67,32 +44,10 @@ export const createCategory = async (
 };
 
 export const updateCategory = async (
-    req: Request<IdParams, {}, Partial<CategoryRequest>>,
+    req: Request<IdParams, {}, UpdateCategoryBody>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-    let { name } = req.body;
-
-    // empty payload?
-    if (!name) {
-        throw new AppError("Category's name must be filled", 400);
-    }
-
-    // name is a number?
-    if (typeof name === "number") {
-        throw new AppError("Category's name should be a string", 400);
-    }
-
-    // payload sanitation
-    id = id.trim();
-    name = name.trim();
-
-    // name contains only number?
-    if (validator.isNumeric(name)) {
-        throw new AppError("Category name can not only number", 400);
-    }
-
-    const updatedCategory = await categoryService.updateCategory(id, name);
+    const updatedCategory = await categoryService.updateCategory(req.params.id, req.body.name);
 
     res.status(200).json({
         success: true,
@@ -105,12 +60,7 @@ export const deleteCategory = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-
-    // payload sanitation
-    id = id.trim();
-
-    const deletedCategory = await categoryService.deleteCategory(id);
+    const deletedCategory = await categoryService.deleteCategory(req.params.id);
 
     res.status(200).json({
         success: true,
