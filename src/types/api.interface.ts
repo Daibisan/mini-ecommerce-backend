@@ -9,7 +9,3 @@ export interface ApiResponse<T = any> {
     data?: T;
     errors?: ValidationErrorItem[];
 }
-
-export interface IdParams {
-    id: string;
-}
