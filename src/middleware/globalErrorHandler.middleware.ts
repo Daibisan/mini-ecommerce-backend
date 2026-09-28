@@ -14,7 +14,7 @@ export const globalErrorHandler: ErrorRequestHandler<{}, ApiResponse> = (
     let message = "Internal Server Error";
     let errors: ValidationErrorItem[] | undefined;
 
-    // 1. Error Validasi Zod
+    // Zod Error
     if (err instanceof ZodError) {
         statusCode = 400;
         message = "Validation Error";
@@ -23,12 +23,12 @@ export const globalErrorHandler: ErrorRequestHandler<{}, ApiResponse> = (
             message: issue.message,
         }));
     }
-    // 2. Custom App Error (Operational Error)
+    // App Error
     else if (err instanceof AppError) {
         statusCode = err.statusCode;
         message = err.message;
     }
-    // 3. Error parsing JSON body bawaan express.json()
+    // JSON Body Error
     else if (
         err instanceof SyntaxError &&
         "status" in err &&
@@ -38,7 +38,7 @@ export const globalErrorHandler: ErrorRequestHandler<{}, ApiResponse> = (
         message = "Invalid JSON payload";
     }
 
-    // Log error di mode non-production untuk debugging
+    // Non-Production Error Logging
     if (env.NODE_ENV !== "production" && statusCode === 500) {
         console.error("UNHANDLED_ERROR:", err);
     }
