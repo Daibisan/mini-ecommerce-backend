@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import AppError from "../../utils/appError.util.js";
-import validator from "validator";
-import { ApiResponse, IdParams } from "../../types/api.interface.js";
-import { ProductRequest } from "../../types/products.intereface.js";
+import { ApiResponse } from "../../types/api.interface.js";
 import { productService } from "./product.service.js";
+import { IdParams } from "../../schemas/common.schema.js";
+import { CreateProductBody, UpdateProductBody } from "./product.schema.js";
 
 // PUBLIC
 export const getAllProducts = async (
@@ -22,12 +22,7 @@ export const getProduct = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-
-    // payload sanitation
-    id = id.trim();
-
-    const product = await productService.getProduct(id);
+    const product = await productService.getProduct(req.params.id);
 
     res.status(200).json({
         success: true,
@@ -37,42 +32,10 @@ export const getProduct = async (
 
 // ADMIN
 export const createProduct = async (
-    req: Request<{}, {}, ProductRequest>,
+    req: Request<{}, {}, CreateProductBody>,
     res: Response<ApiResponse>,
 ) => {
-    let { name, description, price, stock, category_id } = req.body;
-
-    // empty payload?
-    if (!name || !price || !stock || !category_id) {
-        throw new AppError("Product's data must be filled", 400);
-    }
-
-    // name OR desc OR category_id is a number?
-    if (typeof name === "number") {
-        throw new AppError("Product's name should be a string", 400);
-    }
-    if (typeof description === "number") {
-        throw new AppError("Product's desc should be a string", 400);
-    }
-    if (typeof category_id === "number") {
-        throw new AppError("Product's category should be a string", 400);
-    }
-
-    // payload sanitation
-    name = name.trim();
-    if (description) description = description.trim();
-    category_id = category_id.trim();
-
-    // price OR stock not a number?
-    if (typeof price !== "number") {
-        throw new AppError("Product's price should be a number", 400);
-    }
-    if (typeof stock !== "number") {
-        throw new AppError("Product's stock should be a number", 400);
-    }
-
-    const payload = { name, description, price, stock, category_id };
-    const newProduct = await productService.createProduct(payload);
+    const newProduct = await productService.createProduct(req.body);
 
     res.status(201).json({
         success: true,
@@ -82,47 +45,10 @@ export const createProduct = async (
 };
 
 export const updateProduct = async (
-    req: Request<IdParams, {}, Partial<ProductRequest>>,
+    req: Request<IdParams, {}, UpdateProductBody>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-    let { name, description, price, stock, category_id } = req.body;
-
-    // empty payload?
-    if (!name && !price && !stock && !category_id && !description) {
-        throw new AppError(
-            "New Product's data must be filled at least one",
-            400,
-        );
-    }
-
-    // name OR desc OR category_id is a number?
-    if (name && typeof name === "number") {
-        throw new AppError("Product's name should be a string", 400);
-    }
-    if (description && typeof description === "number") {
-        throw new AppError("Product's desc should be a string", 400);
-    }
-    if (category_id && typeof category_id === "number") {
-        throw new AppError("Product's category should be a string", 400);
-    }
-
-    // payload & params sanitation
-    id = id.trim();
-    if (name) name = name.trim();
-    if (description) description = description.trim();
-    if (category_id) category_id = category_id.trim();
-
-    // price OR stock not a number?
-    if (price !== undefined && typeof price !== "number") {
-        throw new AppError("Product's price should be a number", 400);
-    }
-    if (stock !== undefined && typeof stock !== "number") {
-        throw new AppError("Product's stock should be a number", 400);
-    }
-
-    const payload = { name, description, price, stock, category_id };
-    const updatedProduct = await productService.updateProduct(id, payload);
+    const updatedProduct = await productService.updateProduct(req.params.id, req.body);
 
     res.status(200).json({
         success: true,
@@ -135,12 +61,7 @@ export const deleteProduct = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-
-    // payload sanitation
-    id = id.trim();
-
-    const deletedProduct = await productService.deleteProduct(id);
+    const deletedProduct = await productService.deleteProduct(req.params.id);
 
     res.status(200).json({
         success: true,
