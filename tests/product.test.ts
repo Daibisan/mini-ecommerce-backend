@@ -4,10 +4,11 @@ import { prisma } from "../src/lib/prisma.js";
 import { getAdminToken, seed } from "./test.util.js";
 
 let categoryId: string;
+const nonExistentUuid = "123e4567-e89b-12d3-a456-426614174000";
 
 beforeEach(async () => {
     const category = await prisma.category.create({
-        data: { name: seed.categoryName() },
+        data: { name: seed.categoryName().toLowerCase() },
     });
     categoryId = category.category_id;
 });
@@ -39,7 +40,16 @@ describe("POST /api/products", () => {
             .send({});
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Product's data must be filled");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "name" }),
+                expect.objectContaining({ field: "price" }),
+                expect.objectContaining({ field: "stock" }),
+                expect.objectContaining({ field: "category_id" }),
+            ]),
+        );
     });
 
     it("error: typeof name is number", async () => {
@@ -55,7 +65,13 @@ describe("POST /api/products", () => {
             });
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Product's name should be a string");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "name" }),
+            ]),
+        );
     });
 
     it("error: price should be a number", async () => {
@@ -71,7 +87,13 @@ describe("POST /api/products", () => {
             });
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Product's price should be a number");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "price" }),
+            ]),
+        );
     });
 });
 
@@ -113,10 +135,11 @@ describe("GET /api/products/:id", () => {
 
     it("error: product not found", async () => {
         const response = await request(app).get(
-            "/api/products/uuid-palsu-yang-nggak-ada",
+            `/api/products/${nonExistentUuid}`,
         );
         expect(response.status).toBe(404);
-        expect(response.body.error).toBe("Product not found");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Product not found");
     });
 });
 
@@ -157,18 +180,27 @@ describe("PATCH /api/products/:id", () => {
             .send({});
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe(
-            "New Product's data must be filled at least one",
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    field: "root",
+                    message: "New Product's data must be filled at least one",
+                }),
+            ]),
         );
     });
 
     it("error: product not found", async () => {
         const response = await request(app)
-            .patch("/api/products/uuid-palsu-123")
+            .patch(`/api/products/${nonExistentUuid}`)
             .set("Authorization", `Bearer ${getAdminToken()}`)
             .send({ price: 1000 });
 
         expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Product not found");
     });
 });
 
@@ -193,9 +225,11 @@ describe("DELETE /api/products/:id", () => {
 
     it("error: product not found", async () => {
         const response = await request(app)
-            .delete("/api/products/uuid-palsu-123")
+            .delete(`/api/products/${nonExistentUuid}`)
             .set("Authorization", `Bearer ${getAdminToken()}`);
 
         expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Product not found");
     });
 });
