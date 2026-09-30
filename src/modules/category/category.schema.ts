@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const categoryBodySchema = z.object({
+export const CategoryBodySchema = z.object({
     name: z
         .string()
         .trim()
@@ -10,5 +10,5 @@ export const categoryBodySchema = z.object({
         }),
 });
 
-export type CreateCategoryBody = z.infer<typeof categoryBodySchema>;
-export type UpdateCategoryBody = z.infer<typeof categoryBodySchema>;
+export type CreateCategoryBody = z.infer<typeof CategoryBodySchema>;
+export type UpdateCategoryBody = z.infer<typeof CategoryBodySchema>;

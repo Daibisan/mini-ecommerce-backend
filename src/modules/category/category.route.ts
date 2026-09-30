@@ -10,7 +10,7 @@ import requireAuth from "../../middleware/requireAuth.middleware.js";
 import authorize from "../../middleware/authorize.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 import { IdParamsSchema } from "../../schemas/common.schema.js";
-import { categoryBodySchema } from "./category.schema.js";
+import { CategoryBodySchema } from "./category.schema.js";
 
 const router = express.Router();
 
@@ -21,10 +21,10 @@ router.get("/:id", validate({ params: IdParamsSchema }), getCategory);
 // ADMIN
 router.use(requireAuth, authorize("ADMIN"));
 
-router.post("/", validate({ body: categoryBodySchema }), createCategory);
+router.post("/", validate({ body: CategoryBodySchema }), createCategory);
 router.patch(
     "/:id",
-    validate({ body: categoryBodySchema, params: IdParamsSchema }),
+    validate({ body: CategoryBodySchema, params: IdParamsSchema }),
     updateCategory,
 );
 router.delete("/:id", validate({ params: IdParamsSchema }), deleteCategory);
