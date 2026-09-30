@@ -1,7 +1,7 @@
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
-import { ProductRequest } from "../../types/products.intereface.js";
 import AppError from "../../utils/appError.util.js";
+import { CreateProductBody, UpdateProductBody } from "./product.schema.js";
 
 // PUBLIC
 const getAllProducts = async () => {
@@ -18,7 +18,7 @@ const getProduct = async (id: string) => {
 };
 
 // ADMIN
-const createProduct = async (payload: ProductRequest) => {
+const createProduct = async (payload: CreateProductBody) => {
     const newProduct = await prisma.product.create({
         data: { ...payload },
     });
@@ -26,7 +26,7 @@ const createProduct = async (payload: ProductRequest) => {
     return newProduct;
 };
 
-const updateProduct = async (id: string, payload: Partial<ProductRequest>) => {
+const updateProduct = async (id: string, payload: UpdateProductBody) => {
     try {
         const updatedProduct = await prisma.product.update({
             where: { product_id: id },
