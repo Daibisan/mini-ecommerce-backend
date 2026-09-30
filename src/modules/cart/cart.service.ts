@@ -98,10 +98,14 @@ const getCart = async (user_id: string) => {
     return cart;
 };
 
-const updateCartItem = async (id: string, quantity: number) => {
+const updateCartItem = async (
+    user_id: string,
+    id: string,
+    quantity: number,
+) => {
     // Check cartItem existance
     const cartItem = await prisma.cartItem.findFirst({
-        where: { cart_item_id: id },
+        where: { cart_item_id: id, cart: { user_id } },
         select: {
             product: {
                 select: {
@@ -130,20 +134,20 @@ const updateCartItem = async (id: string, quantity: number) => {
     });
 };
 
-const removeCartItem = async (id: string) => {
+const removeCartItem = async (user_id: string, id: string) => {
     try {
         await prisma.cartItem.delete({
-            where: { cart_item_id: id },
+            where: { cart_item_id: id, cart: { user_id } },
         });
     } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                // cartItem not found
-                if (error.code === "P2025") {
-                    throw new AppError("Cart Item not found", 404);
-                }
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // cartItem not found
+            if (error.code === "P2025") {
+                throw new AppError("Cart Item not found", 404);
             }
-            throw error;
         }
+        throw error;
+    }
 };
 
 const clearCart = async (user_id: string) => {

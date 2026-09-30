@@ -37,7 +37,8 @@ export const updateQuantity = async (
     req: Request<IdParams, {}, UpdateCartBody>,
     res: Response<ApiResponse>,
 ) => {
-    const updatedCartItem = await cartService.updateCartItem(req.params.id, req.body.quantity);
+    const { user_id } = req.user as User;
+    const updatedCartItem = await cartService.updateCartItem(user_id, req.params.id, req.body.quantity);
 
     res.status(200).json({
         success: true,
@@ -50,7 +51,8 @@ export const removeCartItem = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    await cartService.removeCartItem(req.params.id);
+    const { user_id } = req.user as User;
+    await cartService.removeCartItem(user_id, req.params.id);
 
     res.status(200).json({
         success: true,
