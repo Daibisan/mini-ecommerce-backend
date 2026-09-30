@@ -3,8 +3,8 @@ import { OrderStatus } from "../../generated/prisma/enums.js";
 import { snap } from "../../lib/midtrans.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
-import { MidtransWebhookPayload } from "../../types/midtrans.interface.js";
 import { Prisma } from "../../generated/prisma/client.js";
+import { MidtransWebhookBody } from "./order.schema.js";
 
 const createOrder = async (shipping_address: string, user_id: string) => {
     const cart = await prisma.cart.findUnique({
@@ -190,7 +190,7 @@ const updateOrderStatus = async (
     }
 };
 
-export const handleWebhook = async (payload: MidtransWebhookPayload) => {
+export const handleWebhook = async (payload: MidtransWebhookBody) => {
     const {
         order_id,
         status_code,
