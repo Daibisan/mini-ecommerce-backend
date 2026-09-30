@@ -12,6 +12,7 @@ import { catchAll } from "./middleware/catchAll.middleware.js";
 import swaggerUi from 'swagger-ui-express';
 import YAML from "yamljs";
 import path from "path";
+import { health_router } from "./modules/health/health.route.js";
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.use(express.json());
 
 if (env.NODE_ENV !== "production") {
     // dev logger
-    app.use((req, res, next) => {
+    app.use((req, _res, next) => {
         console.log(req.method, req.path);
         console.log("User-Agent:", req.headers["user-agent"]);
         next();
@@ -33,13 +34,9 @@ if (env.NODE_ENV !== "production") {
 }
 
 // health
-app.get("/health", (req, res) => {
-    res.status(200).json({
-        status: "ok",
-    });
-});
+app.use("/health", health_router);
 
-// routes
+// feat routes
 app.use("/api/auth", auth_router);
 app.use("/api/categories", category_router);
 app.use("/api/products", product_router);
