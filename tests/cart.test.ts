@@ -8,6 +8,8 @@ let userToken: string;
 let productId: string;
 let categoryId: string;
 
+const nonExistentUuid = "123e4567-e89b-12d3-a456-426614174000";
+
 beforeEach(async () => {
     const user = await prisma.user.create({
         data: {
@@ -20,7 +22,7 @@ beforeEach(async () => {
     userToken = createToken(user.user_id, user.role);
 
     const category = await prisma.category.create({
-        data: { name: seed.categoryName() },
+        data: { name: seed.categoryName().toLowerCase() },
     });
     categoryId = category.category_id;
 
@@ -46,6 +48,7 @@ describe("POST /api/cart/items", () => {
             });
 
         expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
         expect(response.body.data.quantity).toBe(2);
     });
 
@@ -56,7 +59,14 @@ describe("POST /api/cart/items", () => {
             .send({});
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Payload must be filled");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "product_id" }),
+                expect.objectContaining({ field: "quantity" }),
+            ]),
+        );
     });
 
     it("error: invalid type (quantity string)", async () => {
@@ -69,7 +79,32 @@ describe("POST /api/cart/items", () => {
             });
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Quantity type should be integer");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "quantity" }),
+            ]),
+        );
+    });
+
+    it("error: invalid product_id format (not a UUID)", async () => {
+        const response = await request(app)
+            .post("/api/cart/items")
+            .set("Authorization", `Bearer ${userToken}`)
+            .send({
+                product_id: "invalid-uuid-format",
+                quantity: 1,
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "product_id" }),
+            ]),
+        );
     });
 
     it("error: product not found", async () => {
@@ -77,12 +112,13 @@ describe("POST /api/cart/items", () => {
             .post("/api/cart/items")
             .set("Authorization", `Bearer ${userToken}`)
             .send({
-                product_id: "invalid-product-id",
+                product_id: nonExistentUuid,
                 quantity: 1,
             });
 
         expect(response.status).toBe(404);
-        expect(response.body.error).toBe("Product not found");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Product not found");
     });
 
     it("error: quantity higher than stock", async () => {
@@ -95,13 +131,13 @@ describe("POST /api/cart/items", () => {
             });
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Quantity higher than the stock");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Quantity higher than the stock");
     });
 });
 
 describe("GET /api/cart", () => {
     it("success: return cart", async () => {
-        // Pancing buat keranjang dulu dengan menambahkan item
         await request(app)
             .post("/api/cart/items")
             .set("Authorization", `Bearer ${userToken}`)
@@ -112,11 +148,11 @@ describe("GET /api/cart", () => {
             .set("Authorization", `Bearer ${userToken}`);
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.data).toHaveProperty("items");
     });
 
     it("error: cart not found", async () => {
-        // Test menggunakan user baru yang belum pernah membuat keranjang
         const newUser = await prisma.user.create({
             data: {
                 username: seed.username(),
@@ -132,7 +168,8 @@ describe("GET /api/cart", () => {
             .set("Authorization", `Bearer ${newUserToken}`);
 
         expect(response.status).toBe(404);
-        expect(response.body.error).toBe("Cart not found");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Cart not found");
     });
 });
 
@@ -150,6 +187,7 @@ describe("PATCH /api/cart/items/:id", () => {
             .send({ quantity: 3 });
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.data.quantity).toBe(3);
     });
 
@@ -166,6 +204,13 @@ describe("PATCH /api/cart/items/:id", () => {
             .send({ quantity: "3" });
 
         expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "quantity" }),
+            ]),
+        );
     });
 
     it("error: quantity higher than stock", async () => {
@@ -181,17 +226,19 @@ describe("PATCH /api/cart/items/:id", () => {
             .send({ quantity: 999 });
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Quantity higher than the stock");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Quantity higher than the stock");
     });
 
     it("error: cart item not found", async () => {
         const response = await request(app)
-            .patch("/api/cart/items/invalid-cart-item-id")
+            .patch(`/api/cart/items/${nonExistentUuid}`)
             .set("Authorization", `Bearer ${userToken}`)
             .send({ quantity: 2 });
 
         expect(response.status).toBe(404);
-        expect(response.body.error).toBe("CartItem not found");
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("CartItem not found");
     });
 });
 
@@ -213,10 +260,12 @@ describe("DELETE /api/cart/items/:id", () => {
 
     it("error: cart item not found", async () => {
         const response = await request(app)
-            .delete("/api/cart/items/invalid-cart-item-id")
+            .delete(`/api/cart/items/${nonExistentUuid}`)
             .set("Authorization", `Bearer ${userToken}`);
 
         expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Cart Item not found");
     });
 });
 
@@ -227,6 +276,7 @@ describe("DELETE /api/cart", () => {
             .set("Authorization", `Bearer ${userToken}`);
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.message).toBe("Cart cleared successfully");
     });
 });
