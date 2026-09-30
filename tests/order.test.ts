@@ -7,7 +7,7 @@ import { getAdminToken, seed } from "./test.util.js";
 import { createToken } from "../src/lib/jwt.js";
 import { OrderStatus } from "../src/generated/prisma/enums.js";
 
-// Mock Midtrans agar tidak nembak API asli
+// Mock Midtrans agar tidak menembak API asli
 vi.mock("../src/lib/midtrans.js", () => ({
     snap: {
         createTransaction: vi.fn().mockResolvedValue({
@@ -20,6 +20,7 @@ vi.mock("../src/lib/midtrans.js", () => ({
 let userToken: string;
 let userId: string;
 let dummyOrderId: string;
+const nonExistentUuid = "123e4567-e89b-12d3-a456-426614174000";
 
 beforeEach(async () => {
     // 1. Setup User
@@ -36,7 +37,7 @@ beforeEach(async () => {
 
     // 2. Setup Category & Product
     const category = await prisma.category.create({
-        data: { name: seed.categoryName() },
+        data: { name: seed.categoryName().toLowerCase() },
     });
     const product = await prisma.product.create({
         data: {
@@ -76,13 +77,14 @@ describe("POST /api/orders", () => {
         const response = await request(app)
             .post("/api/orders")
             .set("Authorization", `Bearer ${userToken}`)
-            .send({ shipping_address: "Jl. Checkout Sukses" });
+            .send({ shipping_address: "Jl. Checkout Sukses No. 12" });
 
         expect(response.status).toBe(201);
         expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe("Order created successfully");
         expect(response.body.data.payment_token).toBe("mock-token-123");
 
-        // Pastikan cart kosong setelah checkout
+        // Pastikan cart bersih setelah checkout
         const remainingCartItems = await prisma.cartItem.count({
             where: { cart: { user_id: userId } },
         });
@@ -96,6 +98,29 @@ describe("POST /api/orders", () => {
             .send({});
 
         expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "shipping_address" }),
+            ]),
+        );
+    });
+
+    it("error: shipping address only numbers", async () => {
+        const response = await request(app)
+            .post("/api/orders")
+            .set("Authorization", `Bearer ${userToken}`)
+            .send({ shipping_address: "123456" });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "shipping_address" }),
+            ]),
+        );
     });
 });
 
@@ -106,6 +131,7 @@ describe("GET /api/orders", () => {
             .set("Authorization", `Bearer ${userToken}`);
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.data).toBeInstanceOf(Array);
         expect(response.body.data.length).toBeGreaterThan(0);
     });
@@ -118,15 +144,18 @@ describe("GET /api/orders/:id", () => {
             .set("Authorization", `Bearer ${userToken}`);
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.data.order_id).toBe(dummyOrderId);
     });
 
     it("error: order not found", async () => {
         const response = await request(app)
-            .get("/api/orders/invalid-uuid-123")
+            .get(`/api/orders/${nonExistentUuid}`)
             .set("Authorization", `Bearer ${userToken}`);
 
         expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Order not found");
     });
 });
 
@@ -139,6 +168,7 @@ describe("PATCH /api/orders/:id/status", () => {
             .send({ status: OrderStatus.SHIPPED, tracking_number: "RESI-123" });
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.data.status).toBe(OrderStatus.SHIPPED);
         expect(response.body.data.tracking_number).toBe("RESI-123");
     });
@@ -151,6 +181,13 @@ describe("PATCH /api/orders/:id/status", () => {
             .send({ status: "STATUS_NGARANG" });
 
         expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe("Validation Error");
+        expect(response.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ field: "status" }),
+            ]),
+        );
     });
 });
 
@@ -162,20 +199,28 @@ describe("POST /api/orders/webhook", () => {
 
         // Generate signature yang valid
         const hashData = `${dummyOrderId}${statusCode}${grossAmount}${serverKey}`;
-        const signatureKey = crypto.createHash("sha512").update(hashData).digest("hex");
+        const signatureKey = crypto
+            .createHash("sha512")
+            .update(hashData)
+            .digest("hex");
 
-        const response = await request(app)
-            .post("/api/orders/webhook")
-            .send({
-                order_id: dummyOrderId,
-                status_code: statusCode,
-                gross_amount: grossAmount,
-                signature_key: signatureKey,
-                transaction_status: "settlement",
-                fraud_status: "accept",
-            });
+        const response = await request(app).post("/api/orders/webhook").send({
+            order_id: dummyOrderId,
+            transaction_id: "trx-mock-12345",
+            transaction_status: "settlement",
+            gross_amount: grossAmount,
+            payment_type: "bank_transfer",
+            status_code: statusCode,
+            status_message: "Success, transaction found",
+            transaction_time: "2026-01-01 12:00:00",
+            merchant_id: "M123456",
+            signature_key: signatureKey,
+            fraud_status: "accept",
+        });
 
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe("Webhook processed");
 
         // Verifikasi perubahan di database
         const updatedOrder = await prisma.order.findUnique({
@@ -185,16 +230,23 @@ describe("POST /api/orders/webhook", () => {
     });
 
     it("error: invalid signature key", async () => {
-        const response = await request(app)
-            .post("/api/orders/webhook")
-            .send({
-                order_id: dummyOrderId,
-                status_code: "200",
-                gross_amount: "20000.00",
-                signature_key: "signature-bodong",
-                transaction_status: "settlement",
-            });
+        const response = await request(app).post("/api/orders/webhook").send({
+            order_id: dummyOrderId,
+            transaction_id: "trx-mock-12345",
+            transaction_status: "settlement",
+            gross_amount: "20000.00",
+            payment_type: "bank_transfer",
+            status_code: "200",
+            status_message: "Success",
+            transaction_time: "2026-01-01 12:00:00",
+            merchant_id: "M123456",
+            signature_key: "signature-bodong", // Signature salah untuk menguji AppError
+        });
 
-        expect(response.status).toBe(400); // Bad Request / Invalid Webhook
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toBe(
+            "Invalid signature key! Invalid Webhook.",
+        );
     });
 });
