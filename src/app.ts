@@ -13,6 +13,7 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from "yamljs";
 import path from "path";
 import { health_router } from "./modules/health/health.route.js";
+import morgan from "morgan";
 
 const app = express();
 
@@ -22,11 +23,7 @@ app.use(express.json());
 
 if (env.NODE_ENV !== "production") {
     // dev logger
-    app.use((req, _res, next) => {
-        console.log(req.method, req.path);
-        console.log("User-Agent:", req.headers["user-agent"]);
-        next();
-    });
+    app.use(morgan("dev"));
 
     // swagger api docs
     const swaggerDocument = YAML.load(path.join(process.cwd(), 'docs/openapi.yml'));
