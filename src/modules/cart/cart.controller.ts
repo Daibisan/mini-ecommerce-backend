@@ -1,39 +1,18 @@
 import { Request, Response } from "express";
-import AppError from "../../utils/appError.util.js";
-import { ApiResponse, IdParams } from "../../types/api.interface.js";
-import {
-    AddToCartRequest,
-    UpdateCartRequest,
-} from "../../types/carts.interface.js";
+import { ApiResponse } from "../../types/api.interface.js";
 import { cartService } from "./cart.service.js";
 import { User } from "../../types/auth.interface.js";
+import { AddToCartBody, UpdateCartBody } from "./cart.schema.js";
+import { IdParams } from "../../schemas/common.schema.js";
 
 export const addToCart = async (
-    req: Request<{}, {}, AddToCartRequest>,
+    req: Request<{}, {}, AddToCartBody>,
     res: Response<ApiResponse>,
 ) => {
-    let { product_id, quantity } = req.body;
-
-    // empty check
-    if (!product_id || !quantity) {
-        throw new AppError("Payload must be filled", 400);
-    }
-
-    // type check
-    if (typeof product_id !== "string") {
-        throw new AppError("Product Id type should be string", 400);
-    }
-    if (!Number.isInteger(quantity)) {
-        throw new AppError("Quantity type should be integer", 400);
-    }
-
-    // sanitation
-    product_id = product_id.trim();
-
     const { user_id } = req.user as User;
     const addedProduct = await cartService.addToCart(
-        product_id,
-        quantity,
+        req.body.product_id,
+        req.body.quantity,
         user_id,
     );
 
@@ -55,29 +34,10 @@ export const getCart = async (req: Request, res: Response<ApiResponse>) => {
 };
 
 export const updateQuantity = async (
-    req: Request<IdParams, {}, UpdateCartRequest>,
+    req: Request<IdParams, {}, UpdateCartBody>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-    const { quantity } = req.body;
-
-    // empty check
-    if (!id || !quantity) {
-        throw new AppError("Payload & Params must be filled", 400);
-    }
-
-    // type check
-    if (typeof id !== "string") {
-        throw new AppError("Parameter Id should be a string", 400);
-    }
-    if (!Number.isInteger(quantity)) {
-        throw new AppError("Quantity type should be integer", 400);
-    }
-
-    // sanitation
-    id = id.trim();
-
-    const updatedCartItem = await cartService.updateCartItem(id, quantity);
+    const updatedCartItem = await cartService.updateCartItem(req.params.id, req.body.quantity);
 
     res.status(200).json({
         success: true,
@@ -90,22 +50,7 @@ export const removeCartItem = async (
     req: Request<IdParams>,
     res: Response<ApiResponse>,
 ) => {
-    let { id } = req.params;
-
-    // empty check
-    if (!id) {
-        throw new AppError("Params must be filled", 400);
-    }
-
-    // type check
-    if (typeof id !== "string") {
-        throw new AppError("Parameter Id should be a string", 400);
-    }
-
-    // sanitation
-    id = id.trim();
-
-    await cartService.removeCartItem(id);
+    await cartService.removeCartItem(req.params.id);
 
     res.status(200).json({
         success: true,
