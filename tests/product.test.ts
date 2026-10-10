@@ -98,7 +98,7 @@ describe("POST /api/products", () => {
 });
 
 describe("GET /api/products", () => {
-    it("success: return array of products", async () => {
+    it("success: return array of products with default pagination", async () => {
         await prisma.product.create({
             data: {
                 name: seed.productName(),
@@ -109,9 +109,30 @@ describe("GET /api/products", () => {
         });
 
         const response = await request(app).get("/api/products");
+
         expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
         expect(response.body.data).toBeInstanceOf(Array);
         expect(response.body.data.length).toBeGreaterThan(0);
+
+        // Assert struktur & metadata pagination
+        expect(response.body.pagination).toBeDefined();
+        expect(response.body.pagination).toEqual({
+            totalData: expect.any(Number),
+            currentPage: 1,
+            totalPages: expect.any(Number),
+            limit: 10, // Default limit dari Zod
+            hasNextPage: expect.any(Boolean),
+            hasPrevPage: false,
+        });
+    });
+
+    it("success: return products based on page and limit query params", async () => {
+        const response = await request(app).get("/api/products?page=2&limit=5");
+
+        expect(response.status).toBe(200);
+        expect(response.body.pagination.currentPage).toBe(2);
+        expect(response.body.pagination.limit).toBe(5);
     });
 });
 
