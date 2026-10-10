@@ -342,7 +342,27 @@ paths:
     get:
       tags:
         - Categories
-      summary: Get all categories
+      summary: Get all categories with pagination
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number to be retrieved
+          example: 1
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Total data per page
+          example: 10
       responses:
         '200':
           description: Categories fetched successfully
@@ -354,17 +374,46 @@ paths:
                   success:
                     type: boolean
                     example: true
+                  message:
+                    type: string
+                    example: Berhasil mengambil data kategori
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Category'
+                  pagination:
+                    type: object
+                    properties:
+                      totalData:
+                        type: integer
+                        example: 20
+                      currentPage:
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 2
+                      limit:
+                        type: integer
+                        example: 10
+                      hasNextPage:
+                        type: boolean
+                        example: true
+                      hasPrevPage:
+                        type: boolean
+                        example: false
+        '400':
+          description: Bad Request - Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
     post:
       tags:
         - Categories
