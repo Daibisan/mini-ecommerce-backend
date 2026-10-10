@@ -1,11 +1,34 @@
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import AppError from "../../utils/appError.util.js";
-import { CreateProductBody, UpdateProductBody } from "./product.schema.js";
+import { CreateProductBody, GetAllProductsQuery, UpdateProductBody } from "./product.schema.js";
 
 // PUBLIC
-const getAllProducts = async () => {
-    return await prisma.product.findMany();
+export const getAllProducts = async (query: GetAllProductsQuery) => {
+    const { page, limit } = query;
+    const skip = (page - 1) * limit;
+
+    const [products, totalData] = await Promise.all([
+        prisma.product.findMany({
+            skip,
+            take: limit,
+        }),
+        prisma.product.count(),
+    ]);
+
+    const totalPages = Math.ceil(totalData / limit);
+
+    return {
+        data: products,
+        pagination: {
+            totalData,
+            currentPage: page,
+            totalPages,
+            limit,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+        },
+    };
 };
 
 const getProduct = async (id: string) => {

@@ -1,20 +1,21 @@
 import { Request, Response } from "express";
-import AppError from "../../utils/appError.util.js";
-import { ApiResponse } from "../../types/api.interface.js";
+import { ApiResponse, PaginatedApiResponse } from "../../types/api.interface.js";
 import { productService } from "./product.service.js";
 import { IdParams } from "../../schemas/common.schema.js";
-import { CreateProductBody, UpdateProductBody } from "./product.schema.js";
+import { CreateProductBody, GetAllProductsQuery, UpdateProductBody } from "./product.schema.js";
 
 // PUBLIC
 export const getAllProducts = async (
-    _req: Request,
-    res: Response<ApiResponse>,
+    req: Request,
+    res: Response<PaginatedApiResponse>,
 ) => {
-    const product = await productService.getAllProducts();
+    const query = req.query as unknown as GetAllProductsQuery;
+    const product = await productService.getAllProducts(query);
 
     res.status(200).json({
         success: true,
-        data: product,
+        data: product.data,
+        pagination: product.pagination
     });
 };
 

@@ -12,13 +12,14 @@ import { validate } from "../../middleware/validate.middleware.js";
 import { IdParamsSchema } from "../../schemas/common.schema.js";
 import {
     CreateProductBodySchema,
+    GetProductsQuerySchema,
     UpdateProductBodySchema,
 } from "./product.schema.js";
 
 const router = express.Router();
 
 // PUBLIC
-router.get("/", getAllProducts);
+router.get("/", validate({ query: GetProductsQuerySchema }), getAllProducts);
 router.get("/:id", validate({ params: IdParamsSchema }), getProduct);
 
 // ADMIN

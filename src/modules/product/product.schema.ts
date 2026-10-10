@@ -38,5 +38,11 @@ export const UpdateProductBodySchema = z
         error: "New Product's data must be filled at least one",
     });
 
+export const GetProductsQuerySchema = z.object({
+    page: z.coerce.number().min(1).default(1),
+    limit: z.coerce.number().min(1).max(100).default(10),
+});
+
 export type CreateProductBody = z.infer<typeof CreateProductBodySchema>;
 export type UpdateProductBody = z.infer<typeof UpdateProductBodySchema>;
+export type GetAllProductsQuery = z.infer<typeof GetProductsQuerySchema>;
