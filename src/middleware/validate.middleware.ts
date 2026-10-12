@@ -8,24 +8,21 @@ interface RequestValidationSchema {
 }
 
 export const validate = (schema: RequestValidationSchema) => {
-    return async (req: Request, _res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         try {
+            // req.params validation
             if (schema.params) {
                 req.params = (await schema.params.parseAsync(
                     req.params,
                 )) as typeof req.params;
             }
 
+            // req.query validation
             if (schema.query) {
-                const parsedQuery = await schema.query.parseAsync(req.query);
-                Object.defineProperty(req, "query", {
-                    value: parsedQuery,
-                    writable: true,
-                    enumerable: true,
-                    configurable: true,
-                });
+                res.locals.query = await schema.query.parseAsync(req.query);
             }
 
+            // req.body validation
             if (schema.body) {
                 req.body = await schema.body.parseAsync(req.body);
             }

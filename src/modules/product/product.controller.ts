@@ -6,10 +6,10 @@ import { CreateProductBody, GetAllProductsQuery, UpdateProductBody } from "./pro
 
 // PUBLIC
 export const getAllProducts = async (
-    req: Request,
+    _req: Request,
     res: Response<PaginatedApiResponse>,
 ) => {
-    const query = req.query as unknown as GetAllProductsQuery;
+    const query = res.locals.query as GetAllProductsQuery;
     const product = await productService.getAllProducts(query);
 
     res.status(200).json({
