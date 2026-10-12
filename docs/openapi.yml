@@ -41,7 +41,31 @@ components:
         error:
           type: string
           example: "Internal server error"
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Validation error"
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldErrorDetail'
     
+    FieldErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "name"
+        message:
+          type: string
+          example: "name should be not null"
+
     Category:
       type: object
       properties:
@@ -255,10 +279,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Email is not valid"
+                message: "Validation Error"
+                errors:
+                  - field: "email"
+                    message: "Email is not valid"
         '401':
           description: Unauthorized
           content:
@@ -318,10 +345,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Email is not valid"
+                message: "Validation Error"
+                errors:
+                  - field: "identifier"
+                    message: "Identifier is required"
         '401':
           description: Unauthorized
           content:
@@ -402,10 +432,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Category name is required"
+                message: "Validation Error"
+                errors:
+                  - field: "name"
+                    message: "Category name is required"
         '401':
           description: Unauthorized
           content:
@@ -669,7 +702,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: "Validation Error"
+                errors: 
+                  - field: "limit"
+                    message: "Too small: expected number to be >=1"
         '500':
           description: Internal server error
           content:
@@ -729,10 +768,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Product's data must be filled"
+                message: "Validation Error"
+                errors:
+                  - field: "name"
+                    message: "Product's data must be filled"
         '401':
           description: Unauthorized
           content:
@@ -856,10 +898,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "New Product's data must be filled at least one"
+                message: "Validation Error"
+                errors:
+                  - field: "body"
+                    message: "New Product's data must be filled at least one"
         '401':
           description: Unauthorized
           content:
@@ -1088,10 +1133,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Quantity higher than the stock"
+                message: "Validation Error"
+                errors:
+                  - field: "quantity"
+                    message: "Quantity higher than the stock"
         '401':
           description: Unauthorized
           content:
@@ -1170,10 +1218,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Quantity higher than the stock"
+                message: "Validation Error"
+                errors:
+                  - field: "quantity"
+                    message: "Quantity higher than the stock"
         '401':
           description: Unauthorized
           content:
@@ -1230,10 +1281,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Params must be filled"
+                message: "Validation Error"
+                errors:
+                  - field: "id"
+                    message: "Params must be filled"
         '401':
           description: Unauthorized
           content:
@@ -1308,10 +1362,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Invalid signature key! Invalid Webhook."
+                message: "Validation Error"
+                errors:
+                  - field: "signature_key"
+                    message: "Invalid signature key! Invalid Webhook."
         '404':
           description: Order not found
           content:
@@ -1401,10 +1458,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Payload is missing"
+                message: "Validation Error"
+                errors:
+                  - field: "shipping_address"
+                    message: "Payload is missing"
         '401':
           description: Unauthorized
           content:
@@ -1470,10 +1530,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Payload is missing"
+                message: "Validation Error"
+                errors:
+                  - field: "id"
+                    message: "Payload is missing"
         '401':
           description: Unauthorized
           content:
@@ -1563,10 +1626,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                error: "Payload is missing"
+                message: "Validation Error"
+                errors:
+                  - field: "status"
+                    message: "Payload is missing"
         '401':
           description: Unauthorized
           content:
